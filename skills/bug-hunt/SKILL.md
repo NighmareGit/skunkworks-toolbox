@@ -27,7 +27,7 @@ flowchart TD
 
     BISECT["2. BISECT<br/>longcat-2<br/>bisect-regression"] --> WAYFINDER
 
-    WAYFINDER["3. WAYFINDER<br/>or-glm-5-2<br/>Evaluate complexity"]
+    WAYFINDER["3. WAYFINDER<br/>ds-v4-pro<br/>Evaluate complexity"]
     WAYFINDER --> |"complex: spawn research"| RESEARCH
     WAYFINDER --> |"simple fix"| PROTOTYPE
 
@@ -182,7 +182,7 @@ Each stage has different compute and reasoning demands. The orchestrator picks t
 | Triage | `ds-v4-flash` | Fast, cheap — just reads BUGS.md and picks priority |
 | Diagnose | `or-glm-5-2` | 1M context window, high-IQ reasoning for reading source files, forming hypotheses, instrumenting code |
 | Bisect | `longcat-2` | Efficient execution — runs git bisect, builds, tests |
-| Wayfinder | `or-glm-5-2` | Evaluates fix complexity, decides simple vs research path |
+| Wayfinder | `ds-v4-pro` | Evaluates fix complexity, decides simple vs research path |
 | Research | `ds-v4-flash` | Fast parallel read-only code study |
 | Prototype | `ds-v4-flash` | Fast code generation — writes minimal targeted fixes |
 | Verify | `ds-v4-pro` | Thorough — runs GPU benchmarks, checks coherence, compares baselines |
