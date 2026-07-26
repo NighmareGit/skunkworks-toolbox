@@ -68,11 +68,29 @@ flowchart TD
 
 Read `.scratch/BUGS.md`. **Validate the schema** before picking a bug:
 - Every entry must have: `Severity`, `Discovered`, `Symptom`, `Reproduction`, `Status`
-- Severity must be one of: 🔴 Critical, 🟠 High, 🟡 Medium, 🟢 Low
+- Severity must **start with** one of: `🔴 Critical`, `🟠 High`, `🟡 Medium`, `🟢 Low` (may have ` — description` appended)
 - Status must be `Open` (skip `Blocked`, `Fixed`)
 - If any entry fails validation, report "BUGS.md has N malformed entries" and **refuse to proceed** until fixed.
 
+**Reproduction command canonicalization:** BUGS.md repro commands may use `llama-server -p` shorthand. The Diagnose stage must translate these to the canonical `llama-server` + `curl` format:
+
+```
+# BAD (llama-server doesn't accept -p/-n):
+./llama-server -m model.gguf -ngl 0 -p "Hello" -n 5
+
+# GOOD (canonical):
+./llama-server -m model.gguf -ngl 0 --port <random> --no-webui --no-warmup -c 64 &
+sleep 3
+curl -s http://127.0.0.1:<port>/v1/completions -H "Content-Type: application/json" \
+  -d '{"prompt":"Hello","max_tokens":5,"temperature":0}'
+kill %1
+```
+
 Pick the highest-severity unresolved bug (🔴 > 🟠 > 🟡 > 🟢). If no bugs remain, report "ledger clean."
+
+**Hardware requirements check:** Before selecting a bug, verify the pipeline can satisfy its hardware needs. If the bug requires multi-GPU, RPC servers, specific GPU types, or models that don't fit in available VRAM, and those resources aren't available, skip the bug and pick the next highest severity. Report skipped bugs with reason.
+
+**Output:** Bug ID, description, affected files, reproduction steps, required hardware (from BUGS.md or inferred).
 
 **Output:** Bug ID, description, affected files, reproduction steps from BUGS.md.
 
@@ -87,7 +105,7 @@ Delegate to `diagnosing-bugs` skill. Build the feedback loop per its Phase 1-4:
 3. **Hypothesise** — generate 3-5 ranked falsifiable hypotheses. Use `fireplace` if stuck in a single frame. Use `metacognitive-friction` to de-bias before committing to a theory.
 4. **Instrument** — add targeted `fprintf(stderr, "[DEBUG-XXXX] ...")` probes. One variable at a time. Tag every debug log with a unique prefix.
 
-**Output:** Confirmed root cause + target file + target line(s) for the fix.
+**Output:** Confirmed root cause + target file + target line(s) for the fix. **Must include exact symbol names** (function names, struct fields, variable names) so the Wayfinder can grep call sites without re-discovery.
 
 **Exit:** Root cause is falsifiable and confirmed by instrumentation output.
 
@@ -136,14 +154,26 @@ Delegate fix to a worktree-isolated sub-agent using the `prototype` skill patter
 
 **Critical:** Before Verify, prove the diagnosis is correct by flipping the suspected cause.
 
-1. Take the confirmed root cause from Stage 1 (e.g., "buffer is overwritten before DMA completes").
-2. **Deliberately make it worse** — increase the race window, double the buffer size, add a sleep between memcpy and cudaMemcpyAsync.
-3. Run the feedback loop from Stage 1. **If the symptom gets worse (more garbled, faster failure):** the diagnosis is correct → advance to Verify.
-4. **If the symptom does NOT change:** the diagnosis is wrong → **restart at Stage 1 (Diagnose)** with this new evidence. The supposed root cause is a red herring.
+1. Take the confirmed root cause from Stage 1.
+2. **Deliberately make it worse** using a strategy that matches the bug type:
 
-This prevents the most dangerous failure mode: merging a fix for the wrong root cause because it coincidentally masks the symptom.
+| Bug Type | Falsification Strategy |
+|----------|----------------------|
+| Buffer race / timing | Widen the race window: double buffer, add sleep between operations |
+| Wrong dimension / shape | Multiply the wrong dimension by 2, or swap rows/cols |
+| Incorrect condition / flag | Invert the condition (`if (x)` → `if (!x)`) |
+| Missing initialization | Zero-fill before use instead of after |
+| Wrong backend placement | Force to opposite backend (GPU↔CPU) |
+| Logic / algorithm error | Apply the inverse operation, or skip the fix entirely |
 
-**Output:** Falsification result: symptom amplified (✓) or symptom unchanged (✗ → restart).
+3. Run the feedback loop from Stage 1.
+   - **If the symptom gets worse:** the diagnosis is correct → advance to Verify.
+   - **If the symptom does NOT change:** the diagnosis is wrong → **restart at Stage 1 (Diagnose)**.
+   - **If no clear strategy applies:** document `"falsify-skipped: no reversible cause"` and advance to Verify with a warning.
+
+4. **Revert** the falsification change after the test.
+
+**Output:** Falsification result: symptom amplified (✓), unchanged (✗ → restart), or skipped (⚠️ advance with warning).
 
 **Exit:** Symptom amplified — root cause confirmed by negative test.
 
@@ -158,7 +188,9 @@ Delegate to `perf-verification` skill. Run the full verification gate:
 - Throughput measurement (tg t/s, pp t/s)
 - Comparison against pre-fix baseline from BUGS.md or AGENTS.md
 
-**Regression suite (🆕 HARDENING):** Before testing the current bug, run the verification commands for **all previously fixed bugs** from `.scratch/regression-suite.json`. If any previously fixed bug regresses, this is a **FAIL** — the current fix broke a prior fix. Do not commit.
+**Regression suite (🆕 HARDENING):** Before testing the current bug, run the verification commands for **all previously fixed bugs** from `.scratch/regression-suite.json`. If the file doesn't exist (first run, no prior fixes), skip — this is not an error. If any previously fixed bug regresses, this is a **FAIL** — the current fix broke a prior fix. Do not commit.
+
+**Baseline handling:** If BUGS.md doesn't specify a pre-fix throughput baseline, measure current throughput and document it in the verification report as the new baseline. Don't block on missing baselines — correctness bugs (garbled output) don't need throughput comparison.
 
 **Output:** Verification report at `.scratch/benchmarks/<bug-id>-verify.md` with PASS/FAIL including regression suite results.
 
@@ -185,6 +217,8 @@ Update `.scratch/BUGS.md`:
 Commit the fix with a conventional commit message referencing the bug ID.
 
 **Add to regression suite (🆕 HARDENING):** Append this bug's verification commands (Stage 5 test invocations) to `.scratch/regression-suite.json`. Future bug fixes will re-run these tests to detect regressions.
+
+**Task-state archive (🆕):** Before pruning the task state file, extract the `findings` and `artifacts` fields and append them to `.scratch/bug-hunt-resolved.jsonl` as a permanent record. The state file is pruned, but the diagnosis and fix evidence survive.
 
 **Worktree GC (🆕 HARDENING):** Run `worktree-guard gc` to cross-reference `.scratch/task-state/` with existing worktrees. Remove any orphaned worktrees and branches not associated with an active task state.
 
