@@ -112,6 +112,29 @@ Commit the fix with a conventional commit message referencing the bug ID.
 5. **llama-server, not llama-cli.** The spinner/loop bug in llama-cli makes it unsuitable for automated testing. Always use `llama-server` with `--no-warmup -c 128` and curl-based prompt testing.
 6. **GPU lease required** for any stage that touches GPU. Use `gpu-lease` skill.
 
+## Model Selection
+
+Each stage has different compute and reasoning demands. The orchestrator picks the model per sub-agent dispatch:
+
+| Stage | Recommended Model | Why |
+|-------|------------------|-----|
+| Triage | `or-glm-4-5-air` | Fast, cheap — just reads BUGS.md and picks priority |
+| Diagnose | `or-glm-5-2` | 1M context window, high-IQ reasoning for reading source files, forming hypotheses, instrumenting code |
+| Bisect | `or-glm-5-1` | Good balance of context and execution — runs git bisect, builds, tests |
+| Prototype | `or-qwen3-coder-plus` | Code-generation optimized — writes minimal targeted fixes |
+| Verify | `grok-4.5` | Thorough — runs GPU benchmarks, checks coherence, compares baselines |
+| Review | `grok-4.5` or `or-glm-5-2` | Deep code analysis — Standards + Spec axes, adversarial review |
+
+**Override with `--model <name>`** to force a specific model for all stages, or `--model-stage <stage>:<model>` for per-stage override:
+
+```
+/bug-hunt --model or-glm-5-2                          # all stages use GLM 5.2
+/bug-hunt --model-stage diagnose:grok-4.5              # diagnose uses Grok, rest default
+/bug-hunt --model-stage prototype:or-qwen3-coder-free  # cheaper prototype model
+```
+
+The orchestrator passes these to `spawn_subagent(model=...)` for each stage dispatch.
+
 ## Quick Start
 
 ```
