@@ -154,15 +154,15 @@ Commit the fix with a conventional commit message referencing the bug ID.
 
 | Stage | Primary Skill | Backup / Enhancer |
 |-------|--------------|-------------------|
-| Triage | (direct read) | — |
-| Diagnose | `diagnosing-bugs` | `fireplace`, `metacognitive-friction` |
-| Bisect | `bisect-regression` | — |
-| Wayfinder | `wayfinder-assembly-chain` | `fireplace`, `metacognitive-friction` |
+| Triage | (direct read) | `task-state` |
+| Diagnose | `diagnosing-bugs` | `fireplace`, `metacognitive-friction`, `task-state` |
+| Bisect | `bisect-regression` | `task-state` |
+| Wayfinder | `wayfinder-assembly-chain` | `fireplace`, `metacognitive-friction`, `task-state` |
 | Research | `research` | — |
-| Prototype | `prototype` | `tdd`, `worktree-guard` |
-| Verify | `perf-verification` | `worktree-guard` |
+| Prototype | `prototype` | `tdd`, `worktree-guard`, `task-state` |
+| Verify | `perf-verification` | `worktree-guard`, `task-state` |
 | Review | `code-review` | `red-team` |
-| Mark | (direct write) | — |
+| Mark | (direct write) | `task-state` |
 
 ## Rules
 
