@@ -118,12 +118,12 @@ Each stage has different compute and reasoning demands. The orchestrator picks t
 
 | Stage | Recommended Model | Why |
 |-------|------------------|-----|
-| Triage | `or-glm-4-5-air` | Fast, cheap — just reads BUGS.md and picks priority |
+| Triage | `ds-v4-flash` | Fast, cheap — just reads BUGS.md and picks priority |
 | Diagnose | `or-glm-5-2` | 1M context window, high-IQ reasoning for reading source files, forming hypotheses, instrumenting code |
-| Bisect | `or-glm-5-1` | Good balance of context and execution — runs git bisect, builds, tests |
-| Prototype | `or-qwen3-coder-plus` | Code-generation optimized — writes minimal targeted fixes |
-| Verify | `grok-4.5` | Thorough — runs GPU benchmarks, checks coherence, compares baselines |
-| Review | `grok-4.5` or `or-glm-5-2` | Deep code analysis — Standards + Spec axes, adversarial review |
+| Bisect | `longcat-2` | Efficient execution — runs git bisect, builds, tests |
+| Prototype | `ds-v4-flash` | Fast code generation — writes minimal targeted fixes |
+| Verify | `ds-v4-pro` | Thorough — runs GPU benchmarks, checks coherence, compares baselines |
+| Review | `ds-v4-pro` | Deep code analysis — Standards + Spec axes, adversarial review |
 
 **Override with `--model <name>`** to force a specific model for all stages, or `--model-stage <stage>:<model>` for per-stage override:
 
