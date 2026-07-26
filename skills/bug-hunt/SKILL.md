@@ -159,8 +159,8 @@ Commit the fix with a conventional commit message referencing the bug ID.
 | Bisect | `bisect-regression` | — |
 | Wayfinder | `wayfinder-assembly-chain` | `fireplace`, `metacognitive-friction` |
 | Research | `research` | — |
-| Prototype | `prototype` | `tdd` |
-| Verify | `perf-verification` | — |
+| Prototype | `prototype` | `tdd`, `worktree-guard` |
+| Verify | `perf-verification` | `worktree-guard` |
 | Review | `code-review` | `red-team` |
 | Mark | (direct write) | — |
 
