@@ -327,6 +327,92 @@ The orchestrator passes these to `spawn_subagent(model=..., max_context=...)` fo
 /bug-hunt --triage-only    # just show the triage output, don't proceed
 ```
 
+## BUGS.md Contract
+
+Every bug entry must have these fields for the pipeline to accept it. Missing fields → Stage 0 halts.
+
+### Required Fields
+
+| Field | Type | Example | Notes |
+|-------|------|---------|-------|
+| `**Severity**` | enum | `🔴 Critical — model unusable` | Must start with: `🔴 Critical`, `🟠 High`, `🟡 Medium`, or `🟢 Low`. Descriptive suffix after ` — ` is optional. |
+| `**Discovered**` | date | `2026-07-25` | ISO date format |
+| `**Reproduction**` | shell command | See canonical format below | Must be a single shell command that returns non-zero on the bug |
+| `**Symptom**` | text | `Output is Chinese gibberish for English prompts` | What the user sees when the bug triggers |
+| `**Status**` | enum | `🔴 **Open** — needs bisect` | Must start with: `Open`, `Blocked`, or `Fixed`. Only `Open` bugs are selected. |
+| `**Hardware**` | text | `Single GPU (7900 XTX 24 GB)` | What hardware is needed to reproduce. Used by Stage 0 to skip bugs whose HW isn't available. |
+
+### Reproduction Command Canonical Format
+
+Must use `llama-server` + `curl`, not `llama-cli` (spinner/loop bug) and not `llama-server -p` (invalid flag):
+
+```bash
+# Start server on random port, wait, curl completion, kill server
+./build-rocm-native/bin/llama-server \
+  --model <model.gguf> \
+  -ngl <N> \
+  --port 18901 \
+  --no-webui --no-warmup -c 64 \
+  2>&1 &
+
+sleep 3
+
+# Test: check for bug symptom
+curl -s http://127.0.0.1:18901/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"<test prompt>","max_tokens":<N>,"temperature":0}' \
+  | grep -q "<bug symptom pattern>"
+
+# Exit code: 0 = bug present (grep matched), non-zero = bug absent
+RESULT=$?
+kill %1
+exit $RESULT
+```
+
+**Rules:**
+- Use a fixed port per bug (18901–18908 for BUG-001 through BUG-008) to avoid port collisions in the regression suite
+- `grep -q` makes the command return 0 on match (bug present) and non-zero on no match
+- If the bug is a crash/assert, grep for the error message instead of checking output
+- If the bug needs RPC, add `GGML_RPC_UDP=0` prefix and `--rpc <host>:<port>` flags
+- If the model is on an external path, use the full path (e.g., `/mnt/980pro/models/...`)
+
+### Complete Example Entry
+
+```markdown
+### BUG-XXX: Short Descriptive Title
+
+| Field | Value |
+|-------|-------|
+| **Severity** | 🔴 Critical — model unusable without workaround |
+| **Discovered** | 2026-07-26 |
+| **Affected models** | Qwen3.5 9B, Qwen3.6 35B (optional, informative) |
+| **Trigger** | `-ngl 0` on GDN models (optional, informative) |
+| **Reproduction** | `./build-rocm-native/bin/llama-server --model Qwen3.5-9B-MTP-Q4_K_M.gguf -ngl 0 --port 18901 --no-webui --no-warmup -c 64 2>&1 & sleep 3; curl -s http://127.0.0.1:18901/v1/completions -H "Content-Type: application/json" -d '{"prompt":"2+2=","max_tokens":6,"temperature":0}' \| grep -q "5，"; RES=$?; kill %1; exit $RES` |
+| **Hardware** | Single GPU (7900 XTX 24 GB) or CPU-only |
+| **Symptom** | Output is Chinese gibberish for English prompts: `"5，这个等式成立"` instead of `"4"` |
+| **Root cause** | GDN non-fused op in ggml-cpu/ops.cpp uses wrong tensor dimension |
+| **Workaround** | Use `-ngl 99` (full GPU offload) — only works if model fits in VRAM |
+| **Status** | 🔴 **Open** — needs bisect of CPU GDN ops |
+```
+
+### Validation Checks (Stage 0)
+
+1. Every `### BUG-XXX:` entry must have all 6 required fields in its table
+2. `**Severity**` must start with a valid emoji + word
+3. `**Status**` must start with `Open` (not `Blocked` or `Fixed`)
+4. `**Reproduction**` must be a shell command (pipeline canonicalizes `-p` shorthand)
+5. `**Hardware**` must describe required resources
+6. If any validation fails: report count + which bugs failed + halt
+
+### Optional Fields (informative, not validated)
+
+- `**Affected models**` — which model files and configs trigger the bug
+- `**Trigger**` — human-readable trigger description
+- `**Root cause**` — current hypothesis or confirmed cause
+- `**Workaround**` — how to avoid the bug until it's fixed
+- `**Related**` — links to other bugs this one depends on
+- `**Note**` — any additional context
+
 ## Integration with wayfinder-assembly-chain
 
 For multi-bug campaigns, the `wayfinder-assembly-chain` skill can orchestrate multiple `bug-hunt` runs in parallel (different bugs in isolated worktrees). The parent Wayfinder re-evaluates after each batch and re-prioritizes the ledger.
