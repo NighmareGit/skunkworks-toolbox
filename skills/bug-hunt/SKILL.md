@@ -171,7 +171,46 @@ Commit the fix with a conventional commit message referencing the bug ID.
 3. **One bug at a time.** Finish the pipeline before starting the next bug.
 4. **Document everything.** Every stage writes its output to `.scratch/`. Failed hypotheses are valuable — keep them.
 5. **llama-server, not llama-cli.** The spinner/loop bug in llama-cli makes it unsuitable for automated testing. Always use `llama-server` with `--no-warmup -c 128` and curl-based prompt testing.
-6. **GPU lease required** for any stage that touches GPU. Use `gpu-lease` skill.
+
+## Loop Circuit Breakers
+
+Every loop has a hard cap. When hit, **escalate to the user** — do not retry silently.
+
+| Loop | Max Iterations | On Breaker Trip |
+|------|---------------|-----------------|
+| Diagnose ↻ Diagnose | **5** | "Cannot confirm root cause after 5 hypothesis rounds." Write partial findings to `.scratch/research/<bug-id>-stuck.md`, escalate. |
+| Verify ↺ Diagnose | **3** | "Fix failed verification 3 times — approach is wrong." Revert prototype, re-enter Wayfinder with new evidence. |
+| Review ↺ Prototype | **3** | "Review found blocking issues 3 times — fix design is flawed." Revert prototype, re-enter Wayfinder. |
+| Mark → Triage (outer) | **until ledger clean** | No hard cap — sequential bug fixing. User can stop with `/bug-hunt --stop-after N`. |
+
+Breaker state persists in `.scratch/bug-hunt-state.json` so the orchestrator can resume without resetting counters.
+
+## Resource Compartmentalization
+
+| Resource | Stage(s) | Isolation Mechanism |
+|----------|----------|---------------------|
+| **GPU + VRAM** | Diagnose, Prototype, Verify | `gpu-lease` skill — exclusive lease, release after stage completes |
+| **Source tree** | Prototype | `git worktree` isolation — each bug gets `worktrees/bug-<id>/`, destroyed after Mark |
+| **Build artifacts** | Diagnose, Bisect, Prototype, Verify | Worktree-local `build/` directory — no cross-contamination |
+| **RPC servers** | Verify (multi-GPU tests) | Leased via `gpu-lease` — release after Verify stage |
+| **Disk (models)** | Prototype, Verify | Read-only, shared — no lock needed |
+
+**Lease protocol:**
+1. Before stage: acquire lease for required GPU(s)
+2. During stage: exclusive access, no other agent touches the GPU
+3. After stage: release lease immediately — don't hold across stages
+4. Lease timeout: 10 minutes per stage — if exceeded, lease auto-releases and stage fails
+
+## Git Discipline
+
+| Rule | Detail |
+|------|--------|
+| **Branch per bug** | `fix/<bug-id>-<short-desc>` (e.g., `fix/BUG-001-gdn-cpu-fallback`) |
+| **Worktree per bug** | `git worktree add ../worktrees/bug-<id>/ fix/<bug-id>` |
+| **Throw-away prototype** | Prototype stage works in worktree. If Verify fails, `git worktree remove` — no cleanup needed |
+| **Commit on Mark** | Only commit when pipeline reaches Stage 7. Conventional commit: `fix(<scope>): <bug-id> — <description>` |
+| **Worktree cleanup** | After Mark, `git worktree remove worktrees/bug-<id>/` and `git branch -d fix/<bug-id>` (or keep if user wants) |
+| **Recovery** | If pipeline crashes mid-stage, worktree and lease persist. Resume from checkpoint in `.scratch/bug-hunt-state.json` |
 
 ## Model Selection
 
