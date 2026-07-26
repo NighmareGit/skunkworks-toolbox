@@ -1,6 +1,6 @@
 ---
 name: bug-hunt
-description: Systematic bug-fixing pipeline that reads BUGS.md, dispatches diagnose → bisect → prototype → verify → review stages using the skill toolbox. Use when hunting bugs from the ledger or when the user says "fix this bug", "bug hunt", "/bug-hunt".
+description: Systematic bug-fixing pipeline that reads BUGS.md, dispatches triage → diagnose → bisect → wayfinder → prototype → verify → review → mark stages using the skill toolbox, looping until the ledger is clean. Use when hunting bugs from the ledger or when the user says "fix this bug", "bug hunt", "/bug-hunt".
 user-invocable: true
 ---
 
@@ -10,14 +10,54 @@ Systematic bug-fixing pipeline against the project bug ledger (`.scratch/BUGS.md
 
 ## Pipeline Stages
 
+```mermaid
+flowchart TD
+    START(["/bug-hunt"]) --> TRIAGE
+
+    TRIAGE["0. TRIAGE<br/>ds-v4-flash<br/>Read BUGS.md, pick highest 🔴/🟠"]
+
+    TRIAGE --> DIAGNOSE
+
+    DIAGNOSE["1. DIAGNOSE<br/>or-glm-5-2<br/>diagnosing-bugs<br/>+ fireplace + metacognitive-friction"]
+    DIAGNOSE --> |"hypotheses falsified"| DIAGNOSE
+    DIAGNOSE --> |"root cause confirmed"| BISECT_CHECK{known regression<br/>window?}
+
+    BISECT_CHECK --> |yes| BISECT
+    BISECT_CHECK --> |no, skip| WAYFINDER
+
+    BISECT["2. BISECT<br/>longcat-2<br/>bisect-regression"] --> WAYFINDER
+
+    WAYFINDER["3. WAYFINDER<br/>or-glm-5-2<br/>Evaluate complexity"]
+    WAYFINDER --> |"complex: spawn research"| RESEARCH
+    WAYFINDER --> |"simple fix"| PROTOTYPE
+
+    RESEARCH["3a. RESEARCH<br/>ds-v4-flash<br/>research sub-agents<br/>(parallel, read-only)"] --> PROTOTYPE
+
+    PROTOTYPE["4. PROTOTYPE<br/>ds-v4-flash<br/>prototype + tdd"]
+    PROTOTYPE --> VERIFY
+
+    VERIFY["5. VERIFY<br/>ds-v4-pro<br/>perf-verification"]
+    VERIFY --> |"FAIL"| DIAGNOSE
+    VERIFY --> |"PASS"| REVIEW
+
+    REVIEW["6. REVIEW<br/>ds-v4-pro<br/>code-review ⏸ red-team"]
+    REVIEW --> |"blocking issues"| PROTOTYPE
+    REVIEW --> |"clean"| MARK
+
+    MARK["7. MARK<br/>Move to Fixed, commit"]
+    MARK --> |"more bugs in ledger"| TRIAGE
+    MARK --> |"ledger clean"| DONE([Done])
+
+    DONE
 ```
-BUGS.md ──→ TRIAGE ──→ DIAGNOSE ──→ BISECT? ──→ PROTOTYPE ──→ VERIFY ──→ REVIEW ──→ mark BUGS.md
-               │           │            │            │            │           │
-               │     fireplace       bisect-      prototype    perf-      code-review
-               │     metacog-        regression   (TDD loop)   verification  red-team
-               │     friction
-               └── wayfinder-assembly-chain (orchestration pattern)
-```
+
+**Three loops:**
+- **Diagnose ↻ Diagnose** — falsified hypotheses → re-form, re-instrument
+- **Verify ↺ Diagnose** — fix didn't work → restart diagnosis with new evidence
+- **Review ↺ Prototype** — blocking review issues → re-fix
+
+**One outer loop:**
+- **Mark → Triage** — after fixing one bug, pick the next from the ledger. Stops when ledger is clean.
 
 ### Stage 0 — Triage
 
@@ -46,7 +86,21 @@ If the bug appeared between two known git commits and the exact breaking change 
 
 **Output:** First bad commit + diff or "bisect skipped — root cause already confirmed."
 
-### Stage 3 — Prototype
+### Stage 3 — Wayfinder (Complexity Triage)
+
+After root cause is confirmed, evaluate whether the fix path is straightforward or needs deeper study. Delegate to a Wayfinder sub-agent.
+
+**Simple fix** (≤5 lines, 1 file, obvious from root cause): skip directly to Prototype.
+
+**Complex fix** (multiple files, structural change, unclear side effects): spawn `research` sub-agents in parallel to study the affected code paths, call sites, and potential regressions. Research is read-only — no code changes.
+
+Use `fireplace` if the attack surface is unclear. Use `metacognitive-friction` to challenge the root-cause hypothesis before committing to a fix strategy.
+
+**Output:** Fix plan: target files, expected change size, known risks. Research reports at `.scratch/research/<bug-id>-research-*.md` if complex.
+
+**Exit:** Fix plan is clear enough to implement.
+
+### Stage 4 — Prototype
 
 Delegate fix to a worktree-isolated sub-agent using the `prototype` skill pattern:
 
@@ -59,7 +113,7 @@ Delegate fix to a worktree-isolated sub-agent using the `prototype` skill patter
 
 **Exit:** All test prompts produce coherent, semantically correct output.
 
-### Stage 4 — Verify
+### Stage 5 — Verify
 
 Delegate to `perf-verification` skill. Run the full verification gate:
 
@@ -72,7 +126,7 @@ Delegate to `perf-verification` skill. Run the full verification gate:
 
 **Exit:** All configurations PASS coherence + no throughput regression.
 
-### Stage 5 — Review
+### Stage 6 — Review
 
 Run two parallel reviews:
 
@@ -81,9 +135,9 @@ Run two parallel reviews:
 
 **Output:** Review report at `.scratch/code-review/<bug-id>-review.md`.
 
-**Exit:** No blocking issues. If blocking issues found → back to Stage 3.
+**Exit:** No blocking issues. If blocking issues found → back to Stage 4 (Prototype).
 
-### Stage 6 — Mark BUGS.md
+### Stage 7 — Mark BUGS.md
 
 Update `.scratch/BUGS.md`:
 - Move bug from "Active Bugs" to "Fixed Bugs"
@@ -92,6 +146,10 @@ Update `.scratch/BUGS.md`:
 
 Commit the fix with a conventional commit message referencing the bug ID.
 
+**If more unresolved bugs remain in the ledger:** return to Stage 0 (Triage) and repeat the pipeline.
+
+**If ledger is clean:** report "all bugs resolved" and stop.
+
 ## Skill Map
 
 | Stage | Primary Skill | Backup / Enhancer |
@@ -99,9 +157,12 @@ Commit the fix with a conventional commit message referencing the bug ID.
 | Triage | (direct read) | — |
 | Diagnose | `diagnosing-bugs` | `fireplace`, `metacognitive-friction` |
 | Bisect | `bisect-regression` | — |
+| Wayfinder | `wayfinder-assembly-chain` | `fireplace`, `metacognitive-friction` |
+| Research | `research` | — |
 | Prototype | `prototype` | `tdd` |
 | Verify | `perf-verification` | — |
 | Review | `code-review` | `red-team` |
+| Mark | (direct write) | — |
 
 ## Rules
 
@@ -121,6 +182,8 @@ Each stage has different compute and reasoning demands. The orchestrator picks t
 | Triage | `ds-v4-flash` | Fast, cheap — just reads BUGS.md and picks priority |
 | Diagnose | `or-glm-5-2` | 1M context window, high-IQ reasoning for reading source files, forming hypotheses, instrumenting code |
 | Bisect | `longcat-2` | Efficient execution — runs git bisect, builds, tests |
+| Wayfinder | `or-glm-5-2` | Evaluates fix complexity, decides simple vs research path |
+| Research | `ds-v4-flash` | Fast parallel read-only code study |
 | Prototype | `ds-v4-flash` | Fast code generation — writes minimal targeted fixes |
 | Verify | `ds-v4-pro` | Thorough — runs GPU benchmarks, checks coherence, compares baselines |
 | Review | `ds-v4-pro` | Deep code analysis — Standards + Spec axes, adversarial review |
