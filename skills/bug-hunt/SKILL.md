@@ -216,26 +216,28 @@ Breaker state persists in `.scratch/bug-hunt-state.json` so the orchestrator can
 
 Each stage has different compute and reasoning demands. The orchestrator picks the model per sub-agent dispatch:
 
-| Stage | Recommended Model | Why |
-|-------|------------------|-----|
-| Triage | `ds-v4-flash` | Fast, cheap — just reads BUGS.md and picks priority |
-| Diagnose | `or-glm-5-2` | 1M context window, high-IQ reasoning for reading source files, forming hypotheses, instrumenting code |
-| Bisect | `longcat-2` | Efficient execution — runs git bisect, builds, tests |
-| Wayfinder | `ds-v4-pro` | Evaluates fix complexity, decides simple vs research path |
-| Research | `ds-v4-flash` | Fast parallel read-only code study |
-| Prototype | `ds-v4-flash` | Fast code generation — writes minimal targeted fixes |
-| Verify | `ds-v4-pro` | Thorough — runs GPU benchmarks, checks coherence, compares baselines |
-| Review | `ds-v4-pro` | Deep code analysis — Standards + Spec axes, adversarial review |
+| Stage | Recommended Model | Context Cap | Why |
+|-------|------------------|-------------|-----|
+| Triage | `ds-v4-flash` | **40k** | Just reads BUGS.md — minimal context needed |
+| Diagnose | `or-glm-5-2` | **250k** | Heavy source file reading, instrumentation, hypothesis tracking |
+| Bisect | `longcat-2` | **200k** | Git bisect across many commits, build logs, diff analysis |
+| Wayfinder | `ds-v4-pro` | **200k** | Evaluates research reports, investigation files, fix complexity |
+| Research | `ds-v4-flash` | **350k** | Parallel code study across multiple files and call sites |
+| Prototype | `ds-v4-flash` | **500k** | Build issues, large code context, test output for ≥3 prompts × 2 models |
+| Verify | `ds-v4-pro` | **300k** | Benchmark output, coherence checks, baseline comparison across configs |
+| Review | `ds-v4-pro` | **350k** | Diffs, affected code paths, two parallel review reports |
 
-**Override with `--model <name>`** to force a specific model for all stages, or `--model-stage <stage>:<model>` for per-stage override:
+**Override with `--model <name>`** to force a specific model for all stages, `--context <k>` for global cap, or `--model-stage <stage>:<model>` for per-stage override:
 
 ```
 /bug-hunt --model or-glm-5-2                          # all stages use GLM 5.2
-/bug-hunt --model-stage diagnose:grok-4.5              # diagnose uses Grok, rest default
-/bug-hunt --model-stage prototype:or-qwen3-coder-free  # cheaper prototype model
+/bug-hunt --context 128k                                # global 128k cap for all stages
+/bug-hunt --model-stage diagnose:grok-4.5               # diagnose uses Grok, rest default
+/bug-hunt --model-stage prototype:or-qwen3-coder-free   # cheaper prototype model
+/bug-hunt --context-stage prototype:500k                # prototype gets 500k, rest default
 ```
 
-The orchestrator passes these to `spawn_subagent(model=...)` for each stage dispatch.
+The orchestrator passes these to `spawn_subagent(model=..., max_context=...)` for each stage dispatch.
 
 ## Quick Start
 
