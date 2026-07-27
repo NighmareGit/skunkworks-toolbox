@@ -160,12 +160,12 @@ port_ranges:
   multi_gpu_tests:  18921-18950   # Used by multi-gpu-verify
   per_test_increment: 1           # Each test config gets the next port
 
-# Port mapping template:
-# Port 18921 = A1 (72B dense, TCP)
-# Port 18922 = A2 (72B dense, MTP)
-# Port 18941 = A1-UDP (72B dense, UDP)
-# Port 18942 = A1-PIPE (72B dense, UDP+Pipeline)
-# Port 18943 = B1-UDP (80B MoE, UDP)
+# Actual port assignment (increment by +1 per config, NOT +20):
+# Port 18921 = config 1 (e.g. TCP)
+# Port 18922 = config 2 (e.g. UDP)
+# Port 18923 = config 3 (e.g. UDP+Pipeline)
+# Port 18924 = config 4 (e.g. MTP)
+# Port 18925 = config 5 (e.g. Partial offload)
 # ...
 ```
 
@@ -293,7 +293,7 @@ run_prompts() {
 
         curl -s --max-time 60 http://127.0.0.1:$PORT/v1/completions \
           -H "Content-Type: application/json" \
-          -d "{\"prompt\":\"$prompt\",\"max_tokens\":8,\"temperature\":0}" \
+          -d "{\"prompt\":\"$prompt\",\"max_tokens\":32,\"temperature\":0}" \
           | python3 /tmp/checker.py
 
         # Check server still alive AFTER curl
@@ -403,13 +403,17 @@ Write to `.scratch/bug-candidates/candidate-NNN-<short-desc>.md`:
 | **Discovered** | 2026-07-27 |
 | **Affected models** | `<model path>` |
 | **Trigger** | `<test config that failed>` |
-| **Reproduction** | `GGML_RPC_UDP=<0/1> ./build-rocm-native/bin/llama-server --model <path> --rpc <endpoints> -sm layer -ngl <N> --no-webui --no-warmup -c <ctx> --port <port> 2>&1 | grep -iE "<error pattern>"` |
+| **Reproduction** | `<exact command — see note below>` |
 | **Hardware** | `<GPU list with VRAM>` |
 | **Symptom** | `<exact failure output, first 500 chars>` |
 | **Root cause** | _Not yet diagnosed_ |
 | **Workaround** | `<if applicable, e.g. "Use -ngl 50">` |
 | **Status** | 🟡 **Candidate** — needs user review |
 | **Test evidence** | Full log: `/tmp/multigpu-<config>.log` |
+
+> **Note:** When using the executable script (`.scratch/scripts/multi-gpu-verify.sh`),
+> all `<placeholder>` values above are automatically filled with real values from
+> the test run (`$MODEL`, `$PORT`, `$ENV_VARS`, `$RPC_ENDPOINTS`, etc.).
 
 ---
 
