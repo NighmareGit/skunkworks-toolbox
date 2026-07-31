@@ -15,11 +15,20 @@ Orchestrate multi-agent work as a closed feedback loop: Goal → Wayfinder (atta
 4. **Grill-with-docs** — per-slice deep dive informed by research.
 5. **to-spec → to-tickets** — turn validated vectors into a spec (when needed) then into concrete, independently measurable tickets with blocking edges. Tiny vectors may go straight to tickets.
 6. **Isolated execution** — one git branch + one worktree per ticket.
-7. **TDD → Prototype → Verification** — correctness first, then performance. Use the project's verification gate. Prefer `implement` when the ticket is fully specified.
-8. **Debug loop** on failure (do not advance). Use `diagnosing-bugs` for hard cases.
-9. **Code-review** on green → re-verify.
-10. **Failure handling** — if the approach cannot deliver the ticket goal, document the failure mode in `.scratch/adrs/`, commit on the feature branch, notify parent.
-11. **Parent evaluation** — incorporate results, kill dead vectors, promote survivors, regenerate Wayfinder plan.
+7. **TDD → Prototype** — implement the ticket (correctness first, then performance). Prefer `implement` when the ticket is fully specified.
+8. **Red-team BEFORE verify/review (critical enhancement)** — adversarial review of the implemented ticket AND its spec. A code review runs *against* the spec and cannot catch spec-level flaws (protocol gaps, measurability holes, merge-order errors — cf. the Increment-1 F1–F8 findings). If the red-team finds issues: **adapt the spec → re-ticket → re-run steps 7–8** (do NOT hot-fix the code while the ticket is wrong). Bound: max 3 red-team → spec-adapt → re-execute iterations, then escalate to the parent.
+9. **Debug loop** on red/verification failure (do not advance). Use `diagnosing-bugs` for hard cases.
+10. **Verify** — run the project's verification gate on the red-team-passed implementation (perf-verification: clean output diffing, throughput, baseline comparison). Never advance on grep-only gates.
+11. **Code-review** on green → re-verify.
+12. **Failure handling** — if the approach cannot deliver the ticket goal, document the failure mode in `.scratch/adrs/`, commit on the feature branch, notify parent.
+13. **Parent evaluation** — incorporate results, kill dead vectors, promote survivors, regenerate Wayfinder plan.
+
+## Resumability (interruption-safe execution)
+
+- **The scaffold is the system's memory; agents are expendable.** Durable state (specs, tickets, ACs, ledger, task-state) must let ANY agent resume ANY ticket from an interruption.
+- **Per-agent task-state files** (use the `task-state` skill): before/after each stage, write `<ticket-id>.<stage>.state.json` — stage, status (pending/in_progress/done/failed), artifacts, next-action. If an agent dies, a replacement reads the state file and continues from the exact stage.
+- **Verify-already-done on restart (do not trust state alone):** before resuming or redoing a stage, verify the ground truth — does the ticket's worktree/branch exist? does the merge sit at the expected commit? did the AC gate actually pass (re-run the check)? Then mark done or continue. Never redo verified work; never skip unverified work.
+- **One state file per ticket** at `.scratch/task-state/<campaign>/<ticket-id>.json`; the parent aggregates them into the living CONTEXT.md.
 
 ## Wayfinder Rules
 
