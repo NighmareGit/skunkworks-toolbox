@@ -5,6 +5,11 @@ versioned and backed up (Gitea LAN + GitHub public mirror). Every skill here was
 **earned from a measured failure**, not written from a template: each rule below
 comes from a real incident where the naive approach produced a wrong answer.
 
+> *"Scars are the way the beauty of wisdom is earned."* — the operating principle:
+> every rule in this repo is a scar — a lesson paid for with a wrong answer,
+> a mirage, or a kill that had to be overturned. We keep the scars, and the
+> wisdom they bought.
+
 ## What's in here
 
 | Dir | Contents | Promotion rule |
