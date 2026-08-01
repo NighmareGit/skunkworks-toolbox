@@ -62,7 +62,19 @@ pipeline's first action is to ask for one; never start theorizing without it (th
 | ⑤ | Deep research | 1–2 per chosen vector | ✅ | deep-dive report on the surviving vector — "deserves its own" | chosen vector fully specified; open questions closed or deferred explicitly |
 | ⑥ | to-PRD | to-prd skill | ✅ | `.scratch/specs/PRD-<topic>.md` (or tracker issue) | PRD has measurable acceptance criteria anchored to the Stage-0 baseline |
 | ⑦ | Red-team | 1–2 adversarial | ✅ | `.scratch/specs/PRD-<topic>-redteam.md` — attack assumptions, kill-criteria traps, merge-order, measurability holes | verdict: SHIP / SHIP-WITH-FIXES / REJECT; fixes folded back |
-| ⑧ | Scaffolding | parent/plan | ✅ | `.scratch/specs/scaffold-<topic>.md` — slices/tickets with blocking edges, effort, file-collision map, per-slice verify recipe | every ticket has AC + verify recipe; merge order explicit |
+| ⑧ | Scaffolding | parent/plan | ✅ | `.scratch/specs/scaffold-<topic>.md` — slices/tickets with blocking edges, effort, file-collision map, per-slice verify recipe | every ticket has AC + verify recipe; merge order explicit; **scaffold carries a "Scaffold provenance" header line** (see below) |
+
+**Scaffold provenance (mandatory on every scaffold spec).** Every scaffold the
+pipeline produces MUST open with a one-line **Scaffold provenance** header
+recording: (a) the funnel path that produced this rung (which research wave /
+triage vector / deep-dive fed it), and (b) the skill contracts whose shape it
+inherits (`prototype` falsification-first gates, `red-team` risks table,
+`perf-verification` gate contract, `worktree-guard` branch/worktree + build
+bootstrap, `task-state` / `agent-monitor` / `gpu-lease` runtime discipline).
+Why: a future reader — or a resumed agent — sees *why* each structural element
+exists and which discipline enforced it, instead of treating the scaffold as a
+hand-written one-off. The provenance is the scaffold's citation; skip it only
+when the issuer explicitly overrides (the issuer-override rule above).
 | ⑨ | Decide | parent + user | — | ADR + verdict doc in `.scratch/specs/` + LEDGER final entry | all specs collected; user decision recorded |
 
 **Issuer may override any stage's deliverable path or agent count** — the contract is

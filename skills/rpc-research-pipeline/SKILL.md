@@ -96,7 +96,7 @@ T-B1 double-buffer (flip test, ADR-005).
 | ⑤ | Deep research | 1–2 per vector | ✅ | e.g. `rpc-research-speculative.md` (R5/A4), `rpc-research-a6-router-prediction.md` |
 | ⑥ | to-PRD | to-prd skill | ✅ | `.scratch/specs/PRD-rpc-<topic>.md` |
 | ⑦ | Red-team | 1–2 adversarial | ✅ | `.scratch/specs/PRD-rpc-<topic>-redteam.md` (SHIP / SHIP-WITH-FIXES / REJECT) |
-| ⑧ | Scaffolding | parent/plan | ✅ | `.scratch/specs/scaffold-rpc-<topic>.md` — slices, blocking edges, merge order |
+| ⑧ | Scaffolding | parent/plan | ✅ | `.scratch/specs/scaffold-rpc-<topic>.md` — slices, blocking edges, merge order | **Scaffold provenance header mandatory** — one line recording the funnel path (which wave/vector/deep-dive fed this rung) + the skill contracts the structure inherits (prototype gates, red-team risks, perf-verification gates, worktree-guard, task-state/agent-monitor/gpu-lease). Live examples: `prototype-vvram-rpc-backend.md`, `prototype-second-order-spec.md` |
 | ⑨ | Decide | parent + user | — | ADR (`.scratch/adrs/ADR-NNN-…`) + verdict doc + LEDGER final entry |
 
 ## Conflict adjudication — the A7 precedent (load-bearing)
