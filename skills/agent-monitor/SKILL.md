@@ -37,8 +37,11 @@ reads these files — it does NOT trust process liveness alone.
 
 **Mandatory agent rules:**
 - Update `heartbeat` **before and after every tool-heavy stage** (build, GPU run, ssh, long fetch).
+- `heartbeat` MUST be the actual runtime timestamp at write time — `datetime.now(timezone.utc).isoformat()` (or local with offset). **NEVER a placeholder/epoch** (`2026-08-01T00:00:00Z`, `1970-01-01T00:00:00Z`, a fixed string). A placeholder heartbeat is a protocol violation: the monitor computes a huge stale age and raises a FALSE STALE alarm even though the agent is alive (observed 2026-08-01: ACADEMIC-A1/A2 wrote `00:00:00Z` and triggered alarms while actively working).
 - Append to `tool_history` (tail ~10) so the loop detector has data.
 - Flip `status` to `done`/`failed` on completion — **this is what prevents false alarms**.
+
+**Monitor-side fallback (defense in depth):** the watchdog treats the state file's **own mtime** as a liveness signal — a file modified within the last 15 min means the agent is alive regardless of the heartbeat field's content. This absorbs placeholder-timestamp bugs without losing the staleness alarm for genuinely dead agents.
 
 ## Anomaly classification (the taxonomy)
 
