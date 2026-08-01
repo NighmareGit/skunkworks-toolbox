@@ -71,12 +71,14 @@ to answer **one question: "what am I trying to do?"** Then pick the right tool:
 
 ## Backup topology
 
-- **Gitea (LAN):** `http://192.168.8.108:3005/hunter/skunkworks-toolbox` — canonical
-- **GitHub (public):** `https://github.com/NighmareGit/skunkworks-toolbox` — mirror
-- **Local:** `/home/hunter/scratch/skunkworks-toolbox` — working copy
+- **Gitea (private LAN mirror)** — canonical
+- **GitHub (public mirror):** `https://github.com/NighmareGit/skunkworks-toolbox`
+- **Local working copy** — the repo this README ships in
 
-Sync rule: commit locally → push Gitea → push GitHub (sanitized). The GitHub copy
-is public by design — anyone who finds it useful is welcome to the skills.
+Sync rule: commit locally → push the private LAN mirror → push the public GitHub
+mirror (sanitized: no internal hostnames/IPs, credentials, or personal paths).
+The GitHub copy is public by design — anyone who finds it useful is welcome to
+the skills.
 
 ## Status
 
