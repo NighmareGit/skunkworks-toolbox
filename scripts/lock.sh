@@ -15,6 +15,10 @@ acquire_lock() {
   while (( $(date +%s) < deadline )); do
     if mkdir "$lock" 2>/dev/null; then
       printf '%s' "$$" > "$lock/pid"
+      # Self-cleaning trap: shell killed mid-hold (agent cancel -> SIGTERM to the
+      # process group) releases the lock instead of leaving it stale. SIGKILL
+      # can't be trapped -> stale-reap on acquire covers that case.
+      trap "rm -rf '$lock' 2>/dev/null" EXIT INT TERM
       echo "lock acquired: $name"
       return 0
     fi
@@ -33,4 +37,4 @@ acquire_lock() {
   return 1
 }
 
-release_lock() { rm -rf "$LOCK_DIR/$1.lock"; echo "lock released: $1"; }
+release_lock() { rm -rf "$LOCK_DIR/$1.lock"; trap - EXIT INT TERM; echo "lock released: $1"; }
