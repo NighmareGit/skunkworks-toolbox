@@ -2,9 +2,8 @@
 
 Custom Grok skills, scripts, and procedures — the project's operational memory,
 versioned and backed up (Gitea LAN + GitHub public mirror). Every skill here was
-**earned from a measured failure**, not written from a template: the +56% mirage,
-the falsify test that killed a 10×-latency "fix", the A7 kill overturned on a
-false premise — each is baked into a rule below.
+**earned from a measured failure**, not written from a template: each rule below
+comes from a real incident where the naive approach produced a wrong answer.
 
 ## What's in here
 
@@ -46,21 +45,29 @@ to answer **one question: "what am I trying to do?"** Then pick the right tool:
 
 ## The rules that matter most (learned the hard way)
 
-1. **Never a claim without measurement** — the V2 "+56%" was a silent
-   recompute-skip wearing a speedup costume. Benchmark against a real baseline,
-   diff output, don't trust grep-only gates.
-2. **Before/after isn't proof — the flip test is** — a mechanism must survive
-   ON/OFF falsify (ADR-005: a double-buffer "fix" that passed before/after died
-   on the flip).
-3. **Kill decisions never rest on an unverified premise** — the A7 NO-GO was
-   overturned by adjudication (starfish is serial, not parallel). When two
-   reports contradict on a load-bearing claim, dispatch an adjudicator.
-4. **Red-team BEFORE verify/review** — and if it finds issues, adapt the spec and
-   re-run; don't hot-fix a wrong ticket (max 3 iterations, then escalate).
-5. **Strong scaffold, weak execution** — agents are expendable; durable state
-   (ledger, task-state, specs) is the memory. Verify-already-done on restart.
-6. **Kill criteria are honored at the gate, not after** — and every kill gets an
-   ADR with a re-open condition.
+1. **Never a claim without measurement.** A benchmark that skips the very work it
+   claims to speed up can look like a huge win while actually producing garbage.
+   Always measure against a real baseline, verify output correctness (not just
+   timing), and treat log-grep checks as necessary-but-not-sufficient.
+2. **Before/after isn't proof — the flip test is.** A mechanism that "fixes"
+   something when measured before/after can still be irrelevant: flip it on and
+   off under identical conditions. If the symptom doesn't change, the mechanism
+   isn't the cause — and the "fix" may be pure overhead.
+3. **Kill decisions never rest on an unverified premise.** When two analyses
+   contradict on a claim the whole verdict hinges on, test that claim directly
+   (code + measured data) before accepting a kill — never pick a winner by
+   intuition. A wrong kill buries a good idea; a wrong keep wastes the campaign.
+4. **Red-team BEFORE verify/review.** A code review checks implementation against
+   spec — it cannot catch a flawed spec. Attack the plan/ticket adversarially
+   first; if issues surface, adapt the spec and re-run rather than hot-fixing a
+   wrong ticket. Bound the loop (max ~3), then escalate to the human.
+5. **Strong scaffold, weak execution.** Agents are expendable; durable state
+   (ledger, task-state, specs) is the memory. On restart, verify ground truth on
+   disk — never trust state alone, never redo verified work, never skip
+   unverified work.
+6. **Kill criteria are honored at the gate, not after.** State kill criteria up
+   front, check them at the decision gate, and record every kill as an ADR with
+   its re-open condition (what would make it viable again).
 
 ## Backup topology
 
