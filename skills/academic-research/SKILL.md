@@ -143,7 +143,7 @@ The workflow writes a single Markdown report with this structure:
 
 The project's lateral research base lives at:
 
-> `/home/hunter/scratch/prototype-auto/.scratch/research/lateral-research-base.md`
+> the project's research base (e.g. `.scratch/research/lateral-research-base.md`, relative to the repo root)
 
 **Maintenance operations (use this skill):**
 
