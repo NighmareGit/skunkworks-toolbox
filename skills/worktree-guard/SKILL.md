@@ -1,6 +1,6 @@
 ---
 name: worktree-guard
-description: Pre-flight guard that ensures isolated worktree/branch before any code-modifying sub-agent runs. Creates worktree if needed, reports path, cleans up after. Use as pre-condition for prototype, implement, bug-hunt, to-ticket, or any destructive code work.
+description: Pre-flight guard that ensures isolated worktree/branch before any code-modifying sub-agent runs. Creates worktree if needed, reports path, cleans up after, and bootstraps the build (copy configured build dirs from a prior ticket, repoint CMAKE_HOME_DIRECTORY, guard against the stale build.make silent-skip hazard). Use as pre-condition for prototype, implement, bug-hunt, to-ticket, or any destructive code work.
 ---
 
 # Worktree Guard
@@ -28,6 +28,63 @@ If the task requires a GPU, acquire the lease AFTER worktree creation and BEFORE
 Worktree:  worktrees/bug-001/
 GPU:       ROCm0 (leased until stage complete)
 ```
+
+### Build Bootstrap (reuse configured build dirs)
+
+If a previous ticket's worktree has configured build dirs (e.g. `build-rocm-native`,
+`build-cuda-b`), **copy them instead of re-running cmake configure** — saves ~20 min
+per ticket:
+
+```bash
+# From the repo root (worktrees/ lives there)
+cp -r worktrees/<prev-task>/build-rocm-native worktrees/<task-id>/build-rocm-native
+cp -r worktrees/<prev-task>/build-cuda-b      worktrees/<task-id>/build-cuda-b
+```
+
+Then **repoint the source path** in every copied `CMakeCache.txt` — the cache still
+points at the previous worktree:
+
+```bash
+cd worktrees/<task-id>
+sed -i 's|/path/to/worktrees/<prev-task>|/path/to/worktrees/<task-id>|g' \
+    build-rocm-native/CMakeCache.txt build-cuda-b/CMakeCache.txt
+grep -m1 CMAKE_HOME_DIRECTORY build-rocm-native/CMakeCache.txt  # verify
+```
+
+Sanity-build before dispatching the sub-agent:
+
+```bash
+cmake --build build-rocm-native --target rpc-server -j$(nproc)   # or the ticket's target
+```
+
+#### ⚠️ The stale build.make hazard (silent skip)
+
+Per-target `build.make` files under `CMakeFiles/<target>.dir/` may still reference
+the **old worktree's source path**. `cmake --build` then reports `[100%] Built target`
+("up to date") and **silently skips recompiling your edits** — the agent thinks its
+changes are built when they aren't. Symptoms: gate fails with old behavior, or the
+new symbol is absent from the binary.
+
+Fix: remove the stale per-target dir and re-configure:
+
+```bash
+rm -rf build-rocm-native/CMakeFiles/ggml-rpc.dir    # the edited target's dir
+cmake -S . -B build-rocm-native                      # re-configure (fixes build.make)
+cmake --build build-rocm-native --target rpc-server -j$(nproc)
+```
+
+**Verify the build actually took your edits** — never trust "Built target" alone:
+
+```bash
+nm -C build-rocm-native/bin/rpc-server | grep <new-symbol>   # must be present
+# or, for a .so transport lib:
+nm -C build-rocm-native/bin/libggml-rpc.so | grep <new-symbol>
+```
+
+Rule: after ANY build-bootstrap, confirm the new symbol/lines are in the artifact
+before the sub-agent runs its gate. A "clean" build that skipped your code is a
+silent false-green.
+
 
 ## During (report for sub-agent use)
 
