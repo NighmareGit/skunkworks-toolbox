@@ -6,6 +6,12 @@ when-to-use: "Use when: (a) testing a new model on multi-GPU RPC, (b) after appl
 
 # Multi-GPU Verify
 
+> **Template note:** this skill ships sanitized. Placeholders map to a concrete
+> project environment before use: `<FORK_ROOT>` = the llama.cpp fork checkout,
+> `<PROJECT_ROOT>` = the workspace root, `<MODELS_DIR>` = model directory,
+> `<RPC_HOST>` = an RPC server host, `<USER>` = the SSH user. Replace them with
+> your own values; every command stays valid.
+
 A pampered, hand-holding guide for running multi-GPU model tests. Every detail is spelled out — the agent only needs to adapt if the exact use case doesn't fit the blueprint.
 
 ## Quick Start
@@ -13,8 +19,8 @@ A pampered, hand-holding guide for running multi-GPU model tests. Every detail i
 The executable script at `.scratch/scripts/multi-gpu-verify.sh` implements the full pipeline. Use it directly for standard test runs:
 
 ```bash
-/home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/.scratch/scripts/multi-gpu-verify.sh \
-  --model /mnt/980pro/models/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
+<FORK_ROOT>/.scratch/scripts/multi-gpu-verify.sh \
+  --model <MODELS_DIR>/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
   --mode all \
   --pipeline on
 ```
@@ -50,8 +56,8 @@ flowchart TD
 | `Qwen3.5-9B-MTP-Q4_K_M.gguf` | 5.5 GiB | 1 (local only) | none | 99 | Dense + MTP |
 | `Qwen3.6-35B-A3B-APEX-MTP-I-Quality.gguf` | 22 GiB | 1 (local only) | none | 99 | GDN MoE + MTP |
 | `Qwen3-72B-Instruct.IQ4_XS.gguf` | 40 GiB | 2 | `127.0.0.1:50051` | 99 | Dense |
-| `Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf` | 53 GiB | 3 | `+192.168.8.23:50054` | 99 | MoE |
-| `Qwen3.5-122B-A10B-Q4_K_S.gguf` | 70 GiB | 4 | `+192.168.8.23:50055` | **50** (partial) | GDN MoE |
+| `Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf` | 53 GiB | 3 | `+<RPC_HOST>:50054` | 99 | MoE |
+| `Qwen3.5-122B-A10B-Q4_K_S.gguf` | 70 GiB | 4 | `+<RPC_HOST>:50055` | **50** (partial) | GDN MoE |
 | `Mixtral-8x22B-Instruct-v0.1.IQ4_XS.gguf` | 72 GiB | 4 | all | 99 | MoE |
 | `Qwen3-Coder-Next-APEX-I-Quality.gguf` | 47 GiB | 2 | `127.0.0.1:50051` | 99 | Dense |
 
@@ -84,10 +90,10 @@ HAS_MTP=$(strings "$MODEL" | grep -c "mtp_head")
 
 | Location | Purpose |
 |----------|---------|
-| `/home/hunter/scratch/prototype-auto/*.gguf` | Small models (9B, 35B, 122B) |
-| `/mnt/980pro/models/*.gguf` | Large models (72B+, 80B+, Mixtral) |
-| `/mnt/toshiba_a/models/*.gguf` | Archive models |
-| `/mnt/toshiba_b/models/*.gguf` | Very large models (172B+) |
+| `<PROJECT_ROOT>/*.gguf` | Small models (9B, 35B, 122B) |
+| `<MODELS_DIR>/*.gguf` | Large models (72B+, 80B+, Mixtral) |
+| `<MODELS_DIR_ARCHIVE>/*.gguf` | Archive models |
+| `<MODELS_DIR_LARGE>/*.gguf` | Very large models (172B+) |
 
 ---
 
@@ -97,8 +103,8 @@ HAS_MTP=$(strings "$MODEL" | grep -c "mtp_head")
 
 ```bash
 LEASE_ID="multigpu-$$-$(date +%s)"
-mkdir -p /home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/.scratch/leases
-cat > /home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/.scratch/leases/${LEASE_ID}.lease <<EOF
+mkdir -p <FORK_ROOT>/.scratch/leases
+cat > <FORK_ROOT>/.scratch/leases/${LEASE_ID}.lease <<EOF
 agent: multi-gpu-verify
 gpus: 0
 acquired: $(date -Iseconds)
@@ -107,13 +113,13 @@ purpose: multi-GPU verification
 EOF
 
 # Cleanup trap
-trap "rm -f /home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/.scratch/leases/${LEASE_ID}.lease; kill \$(lsof -t -i:18921-18950) 2>/dev/null" EXIT
+trap "rm -f <FORK_ROOT>/.scratch/leases/${LEASE_ID}.lease; kill \$(lsof -t -i:18921-18950) 2>/dev/null" EXIT
 ```
 
 ### 2b. Kill Orphan Servers
 
 ```bash
-cd /home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant
+cd <FORK_ROOT>
 # Kill any leftover llama-server processes on test ports
 for port in $(seq 18901 18950); do
     kill $(lsof -t -i:$port) 2>/dev/null || true
@@ -127,8 +133,8 @@ sleep 2
 # Standard endpoints for this hardware setup:
 RPC_ENDPOINTS=(
     "127.0.0.1:50051"       # Docker 3060 Ti (romulus)
-    "192.168.8.23:50054"    # RTX 3090 (triton)
-    "192.168.8.23:50055"    # RTX 3070 (triton)
+    "<RPC_HOST>:50054"    # RTX 3090 (triton)
+    "<RPC_HOST>:50055"    # RTX 3070 (triton)
 )
 
 for ep in "${RPC_ENDPOINTS[@]}"; do
@@ -186,8 +192,8 @@ echo "Using port $NEXT_PORT"
 
 ```bash
 # Base server command template
-MODEL="/mnt/980pro/models/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf"
-RPCS="--rpc 127.0.0.1:50051 --rpc 192.168.8.23:50054 --rpc 192.168.8.23:50055"
+MODEL="<MODELS_DIR>/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf"
+RPCS="--rpc 127.0.0.1:50051 --rpc <RPC_HOST>:50054 --rpc <RPC_HOST>:50055"
 NGL=99
 
 # Config 1: TCP baseline
@@ -427,11 +433,11 @@ Write to `.scratch/bug-candidates/candidate-NNN-<short-desc>.md`:
 ### 6d. Storage
 
 ```bash
-mkdir -p /home/hunter/scratch/prototype-auto/.scratch/bug-candidates/
+mkdir -p <PROJECT_ROOT>/.scratch/bug-candidates/
 # Count existing candidates to generate unique ID
-CANDIDATE_NUM=$(ls /home/hunter/scratch/prototype-auto/.scratch/bug-candidates/ 2>/dev/null | wc -l)
+CANDIDATE_NUM=$(ls <PROJECT_ROOT>/.scratch/bug-candidates/ 2>/dev/null | wc -l)
 CANDIDATE_NUM=$((CANDIDATE_NUM + 1))
-CANDIDATE_FILE="/home/hunter/scratch/prototype-auto/.scratch/bug-candidates/candidate-$(printf '%03d' $CANDIDATE_NUM)-$(date +%Y-%m-%d)-$(echo $SHORT_DESC | tr ' ' '-').md"
+CANDIDATE_FILE="<PROJECT_ROOT>/.scratch/bug-candidates/candidate-$(printf '%03d' $CANDIDATE_NUM)-$(date +%Y-%m-%d)-$(echo $SHORT_DESC | tr ' ' '-').md"
 ```
 
 ### 6e. Never Auto-Import
@@ -493,17 +499,17 @@ Write to `--output` (default: `/tmp/multigpu-<date>.md`):
 
 ```bash
 deploy_rpc_server() {
-    local BUILD_DIR="/home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/build-cuda-b-bin"
+    local BUILD_DIR="<FORK_ROOT>/build-cuda-b-bin"
 
     # Build CUDA rpc-server
     cmake --build "$BUILD_DIR" --target all -j$(nproc) 2>&1 | tail -5
 
     # Deploy to triton
-    ssh hunter@192.168.8.23 "sudo kill \$(pgrep rpc-server) 2>/dev/null; sleep 2"
-    scp "$BUILD_DIR/bin/rpc-server" hunter@192.168.8.23:/tmp/rpc-server-new
+    ssh <USER>@<RPC_HOST> "sudo kill \$(pgrep rpc-server) 2>/dev/null; sleep 2"
+    scp "$BUILD_DIR/bin/rpc-server" <USER>@<RPC_HOST>:/tmp/rpc-server-new
 
     # Restart on triton (3090:50054, 3070:50055)
-    ssh hunter@192.168.8.23 "
+    ssh <USER>@<RPC_HOST> "
         sudo cp /tmp/rpc-server-new /usr/local/bin/rpc-server && \
         sudo LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64 \
             nohup /usr/local/bin/rpc-server -H 0.0.0.0 -p 50054 -d CUDA0 > /tmp/rpc-50054.log 2>&1 & \
@@ -523,29 +529,29 @@ deploy_rpc_server() {
 ```bash
 # === Example 1: Quick 80B MoE test (most common case) ===
 multi-gpu-verify \
-  --model /mnt/980pro/models/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
+  --model <MODELS_DIR>/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
   --mode all \
   --pipeline on
 
 # === Example 2: 72B dense, UDP only ===
 multi-gpu-verify \
-  --model /mnt/980pro/models/Qwen3-72B-Instruct.IQ4_XS.gguf \
+  --model <MODELS_DIR>/Qwen3-72B-Instruct.IQ4_XS.gguf \
   --mode udp
 
 # === Example 3: 122B GDN with partial offload ===
 multi-gpu-verify \
-  --model /home/hunter/scratch/prototype-auto/Qwen3.5-122B-A10B-Q4_K_S.gguf \
+  --model <PROJECT_ROOT>/Qwen3.5-122B-A10B-Q4_K_S.gguf \
   --mode tcp \
   --ngl 50
 
 # === Example 4: Full regression run after bug fixes ===
-multi-gpu-verify --model /mnt/980pro/models/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf --mode all --pipeline on
-multi-gpu-verify --model /mnt/980pro/models/Qwen3-72B-Instruct.IQ4_XS.gguf --mode udp
-multi-gpu-verify --model /home/hunter/scratch/prototype-auto/Qwen3.6-35B-A3B-APEX-MTP-I-Quality.gguf --mode all
+multi-gpu-verify --model <MODELS_DIR>/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf --mode all --pipeline on
+multi-gpu-verify --model <MODELS_DIR>/Qwen3-72B-Instruct.IQ4_XS.gguf --mode udp
+multi-gpu-verify --model <PROJECT_ROOT>/Qwen3.6-35B-A3B-APEX-MTP-I-Quality.gguf --mode all
 
 # === Example 5: Deploy updated rpc-server first, then test ===
 multi-gpu-verify \
-  --model /mnt/980pro/models/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
+  --model <MODELS_DIR>/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
   --deploy \
   --mode all
 ```
@@ -557,21 +563,21 @@ multi-gpu-verify \
 The full pipeline is implemented as an executable script at:
 
 ```
-/home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/.scratch/scripts/multi-gpu-verify.sh
+<FORK_ROOT>/.scratch/scripts/multi-gpu-verify.sh
 ```
 
 Run it directly:
 
 ```bash
 # Make executable (first time only)
-chmod +x /home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/.scratch/scripts/multi-gpu-verify.sh
+chmod +x <FORK_ROOT>/.scratch/scripts/multi-gpu-verify.sh
 
 # Quick test
-/home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/.scratch/scripts/multi-gpu-verify.sh --help
+<FORK_ROOT>/.scratch/scripts/multi-gpu-verify.sh --help
 
 # Test a model
-/home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/.scratch/scripts/multi-gpu-verify.sh \
-  --model /mnt/980pro/models/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
+<FORK_ROOT>/.scratch/scripts/multi-gpu-verify.sh \
+  --model <MODELS_DIR>/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
   --mode all --pipeline on
 ```
 
@@ -613,7 +619,7 @@ For **pure throughput measurement** (no quality checks), `llama-bench` is faster
 
 ```bash
 ./build-rocm-native/bin/llama-bench \
-  --model /mnt/980pro/models/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
+  --model <MODELS_DIR>/Qwen3-Next-80B-A3B-Instruct-Q5_K_M.gguf \
   -ngl 99 -t 8 -p 512 -n 128
 ```
 

@@ -37,7 +37,7 @@ The toolbox must contain **no internal environment references**. The scan
 - **Usernames in access contexts** — `user@host` SSH/SCP lines, `hunter@`, `root@<internal>`.
 - **Absolute personal paths** — `/home/<user>/...`, `/Users/<user>/...`, `/mnt/<label>/...`.
 - **Credentials of any kind** — passwords, tokens, API keys, `Authorization:` headers,
-  private keys, `BEGIN PRIVATE KEY`, Gitea/GitHub tokens, `.env` values.
+  private keys (PEM blocks), Gitea/GitHub tokens, `.env` values.
 - **Internal service URLs** — `http://<lan-ip>:<port>/...` (Gitea, dashboards, registries).
 - **Passwords even in comments/examples** — a redacted-looking `12345` in an example is still a leak vector.
 

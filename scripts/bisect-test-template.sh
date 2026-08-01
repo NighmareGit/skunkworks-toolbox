@@ -2,8 +2,8 @@
 # Returns 0 if GDN produces text (GOOD), 1 if garbled (BAD), 125 if build/setup fails
 set -e
 
-MODEL="/home/hunter/scratch/prototype-auto/Qwen3.5-9B-MTP-Q4_K_M.gguf"
-BUILD_DIR="/home/hunter/scratch/prototype-auto/atomic-llama-cpp-turboquant/build-rocm-native"
+MODEL="${MODEL_PATH:?set MODEL_PATH to your model .gguf}"
+BUILD_DIR="${BUILD_DIR:?set BUILD_DIR to your llama.cpp build}"
 PORT=$((19950 + RANDOM % 1000))
 
 # Kill ALL llama-server instances

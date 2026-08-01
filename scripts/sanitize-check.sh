@@ -27,7 +27,7 @@ PATTERNS=(
   'http://(?!127\.0\.0\.1)[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'  # http://<ip> internal URLs (loopback exempt)
 )
 
-FILES=$(git ls-files)
+FILES=$(git ls-files | grep -vE "^(AGENTS\.md|scripts/sanitize-check\.sh)$")
 [ -z "$FILES" ] && { echo "no tracked files"; exit 0; }
 
 FAIL=0

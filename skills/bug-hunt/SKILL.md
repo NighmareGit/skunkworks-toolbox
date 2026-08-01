@@ -374,7 +374,7 @@ exit $RESULT
 - `grep -q` makes the command return 0 on match (bug present) and non-zero on no match
 - If the bug is a crash/assert, grep for the error message instead of checking output
 - If the bug needs RPC, add `GGML_RPC_UDP=0` prefix and `--rpc <host>:<port>` flags
-- If the model is on an external path, use the full path (e.g., `/mnt/980pro/models/...`)
+- If the model is on an external path, use the full path (e.g., `<MODELS_DIR>/...`)
 
 ### Complete Example Entry
 
