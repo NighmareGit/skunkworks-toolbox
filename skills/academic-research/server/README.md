@@ -46,7 +46,7 @@ These are API parameters, not fake heartbeats — OpenAlex and Unpaywall operate
 {
   "academic-mcp": {
     "command": "bash",
-    "args": ["-c", "source /home/hunter/programs/academic-mcp/.venv/bin/activate && python /home/hunter/programs/academic-mcp/academic_mcp.py"]
+    "args": ["-c", "source <MCP_VENV>/bin/activate && python <REPO_ROOT>/mcp/academic-mcp/academic_mcp.py"]
   }
 }
 ```

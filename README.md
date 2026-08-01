@@ -16,8 +16,8 @@ comes from a real incident where the naive approach produced a wrong answer.
 |-----|----------|----------------|
 | `skills/` | Reusable skills (43) — general + project-flavored | A capability graduates here when it appears in **2+ places** (skill-architect reusability gate) |
 | `workflows/` | Rhai workflows for project automation | Stays in its originating project until a **second consumer** exists; then promoted + generalized here |
-| `scripts/` | Reusable shell/python helpers (bisect template, hitl loop template) | Same 2-consumer rule |
-| `procedures/` | Case-study procedures (e.g. git-bisect-regression-fix) | Written after a hard-won debugging campaign |
+| `scripts/` | Reusable shell/python helpers (bisect template, hitl loop template, lock helper) | Same 2-consumer rule |
+| `procedures/` | Case-study procedures (e.g. git-bisect-regression-fix, project-initialization) | Written after a hard-won debugging campaign |
 
 ## How to read this repo (for agents)
 
