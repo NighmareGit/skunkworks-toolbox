@@ -126,6 +126,10 @@ multi-agent campaign, read **`docs/orchestration-playbook.md`** before dispatchi
 anything — it is the generalized dispatch-brief anatomy, agent-assignment map,
 lock/lease rules, resume-after-kill discipline, and failure lessons. The
 `orchestration-dispatch` skill points to it and carries the reusable templates.
+The **judgment layer** on top of the playbook is `docs/pattern-recognition.md`
+(agent-health triage, signature diagnostics, brief calibration, confound
+detector, resume-vs-redo, and the three dispatch archetypes with skeleton
+exemplars) — read it alongside the playbook before dispatching anything.
 
 ## 6. Quick reference (copy into prompts)
 

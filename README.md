@@ -29,7 +29,10 @@ to answer **one question: "what am I trying to do?"** Then pick the right tool:
   generalized dispatch + orchestration playbook: the dispatch-brief anatomy,
   agent-assignment map, lock/lease rules, resume-after-kill discipline, and the
   failure lessons. It's the parent-agent's operating manual; the
-  `orchestration-dispatch` skill is its loadable pointer + templates.
+  `orchestration-dispatch` skill is its loadable pointer + templates. Pair it
+  with [docs/pattern-recognition.md](docs/pattern-recognition.md) — the
+  judgment layer (agent-health triage, signature diagnostics, brief
+  calibration, the three dispatch archetypes with skeleton exemplars).
 
 - **"Should we build X / which fix is best / is idea Y viable?"** →
   `research-pipeline` (generic) or `rpc-research-pipeline` (RPC flavor).
