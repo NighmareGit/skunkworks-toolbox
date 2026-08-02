@@ -15,7 +15,21 @@ ticket end-to-end. Your verdict decides whether the idea is PORTED, BANKED, or K
    - **File existence** — do the patch's target files/dirs exist in the fork? If a target is absent, estimate the divergence — KILL or ADAPT with evidence.
    - **Structural fit** — do the function names, variable names, and surrounding logic match the patch target?
 6. **Apply EXACTLY** — the delta (the seam report's precise change). Blast radius = the seam only. No re-architecting, no porting hardware-bound parts, no scope creep.
-7. **Build** — build lock, build the correct target (the seam's backend — check the file's dir), release the lock. **Artifact-verify**: nm/strings/disassembly prove the new code is in the built artifact (never trust "Built target"); object mtime > source mtime.
+7. **Build** — build lock, build the correct target(s) from the seam's file path (the seam→target map below: build EVERY backend that compiles the seam; a seam under ggml/src/ggml-cuda/* is compiled under BOTH the CUDA build dir and the ROCm/HIP build dir — the "CUDA-only" excuse is BANNED), release the lock.
+   ```
+   seam path pattern             → backend build dir(s) to build
+   ggml/src/ggml-cuda/*.cu (*)   → build-cuda  AND  build-rocm-native (ggml-hip)
+   ggml/src/ggml-hip/*           → build-rocm-native only
+   ggml/src/ggml-cpu/*           → build-cpu / the CPU base lib
+   ggml/src/ggml-base/*          → every backend (verify against the seam's primary)
+   src/*.cpp, src/llama.cpp     → the frontend lib of the seam's backend
+   (*) ggml-cuda.cu is HIP-compiled too: ggml-hip/CMakeLists.txt:64 GLOBs
+   ../ggml-cuda/*.cu into ggml-hip's sources (proven empirically — the F2 snake-fusion
+   fix compiled under build-rocm-native, .o under ggml-hip.dir). This is the load-bearing
+   case: never skip the HIP build for a ggml-cuda/*.cu seam.
+   ```
+   **Self-check**: the chosen target must actually compile the seam file — the seam's .o must appear in the build dir (grep compile_commands.json / the CMake target sources for the seam filename); a target that does not compile the seam is the WRONG target. **Artifact-verify**: nm/strings/disassembly prove the new code is in the built artifact (never trust "Built target"); object mtime > source mtime. **Provenance**: evidence must trace to THIS worktree's build of HEAD — artifact path inside the worktree-local build dir; borrowed evidence (another worktree's build, a sibling arm's artifact) is a FAILURE. **Cleanliness**: worktree AND main tree git status clean before close — any dirty tracked file is yours to revert or explain in the report.
+   **Revert trigger**: B1 is KILLED (and the build-marker wrapper un-deferred) if the next steal ticket's build-stage report shows borrowed artifacts, an artifact path outside the worktree-local build dir, or the self-check grep skipped.
 8. **Verdict + close** — IMPL / BANK / KILL with the evidence table. Report FIRST (the project's report path), then ledger entry (the project's numbering convention), then state → complete, then commit + push. Steal-list row update. Lessons field.
 
 ## Discipline
