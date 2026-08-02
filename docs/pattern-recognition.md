@@ -61,6 +61,12 @@ Diagnose the pointer.
 - **Over-specification warning:** specifying *how* when the agent should decide
   *what* produces a typist, not an engineer. Specify the *seam* and the
   *constraint*, let the agent implement.
+- **HTTP fetch = curl (the "couldn't fetch the diff" gap):** agents can report
+  a remote fetch as impossible because `read_file` rejects HTTP and MCP schemas
+  aren't exposed — without trying `curl`/`urllib` via the terminal, which every
+  implementation/research agent has. Rule: fetching remote content (PR diffs,
+  raw files, APIs) is a curl job; never accept "couldn't fetch" from an agent
+  that didn't attempt curl (source mission: F25-DESIGN's diff-fetch gap, 08-02).
 - **Report-first ordering (the "agent skipped the report write" pattern):**
   study/research agents can produce the analysis + a ledger entry (their natural
   output) and then *skip the report-file write* while claiming it in the

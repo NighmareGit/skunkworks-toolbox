@@ -15,6 +15,15 @@ You are the **[ROLE]** agent for **[TICKET-NAME]** — **[ONE-SENTENCE GOAL]**.
 3. `[path/to/design.md]` — [the mechanism/plan]
 4. `[path/to/state.json]` — [ticket state if resuming]
 
+### Web/HTTP access (read BEFORE fetching remote content)
+
+- `read_file` does NOT do HTTP. To fetch remote content (GitHub PR diffs, raw
+  files, APIs): use `curl -L <url>` (or python `urllib`) via `run_terminal_command`.
+  Try curl BEFORE declaring a fetch impossible — an agent that reports "diff not
+  fetched" without attempting curl has failed the brief (F25-DESIGN, 08-02).
+- If curl fails on network/rate-limit: retry with backoff, then fall back to
+  `web_search` (max 2 attempts), then signal `NEED_ONLINE: <query>` to the parent.
+
 ### Ground truth (verified by the parent — trust, re-check only if it smells)
 
 - Repo/HEAD: `[fork]` @ `[commit]` (branch `[branch]`)

@@ -17,6 +17,15 @@ You are the measurement agent for **[TICKET]** — **[ONE-SENTENCE GOAL: a numbe
 verdict is needed; nothing to build]**. Measurement-ONLY: no code changes, no
 wiring. Keep it FAST (target < [N] tool calls, < [N] min).
 
+### Web/HTTP access (read BEFORE fetching remote content)
+
+- `read_file` does NOT do HTTP. To fetch remote content (GitHub PR diffs, raw
+  files, APIs): use `curl -L <url>` (or python `urllib`) via `run_terminal_command`.
+  Try curl BEFORE declaring a fetch impossible — an agent that reports "diff not
+  fetched" without attempting curl has failed the brief (F25-DESIGN, 08-02).
+- If curl fails on network/rate-limit: retry with backoff, then fall back to
+  `web_search` (max 2 attempts), then signal `NEED_ONLINE: <query>` to the parent.
+
 ### Context
 
 - Repo: `[fork]` @ `[HEAD]` (branch `[branch]`)
