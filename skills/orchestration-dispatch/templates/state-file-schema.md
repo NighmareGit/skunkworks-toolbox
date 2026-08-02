@@ -48,8 +48,8 @@ the parent read these files; an agent that never writes one is invisible and sus
 
 ## Why this matters (from the source mission)
 
-- The E-1 fix was committed by a cancelled agent; its state file + worktree made
-  resume trivial (verify, don't redo).
+- A fix committed by a cancelled agent was resumed, not redone: its state file +
+  worktree made verification trivial (verify, don't re-implement).
 - An agent that skipped its state file looked "dead" to the watchdog for hours
   while actually working — cost a false takeover dispatch.
 - The 51-file task-state inventory (`.scratch/task-state/increment1/`) is the

@@ -19,7 +19,7 @@ You are the **[ROLE]** agent for **[TICKET-NAME]** — **[ONE-SENTENCE GOAL]**.
 
 - Repo/HEAD: `[fork]` @ `[commit]` (branch `[branch]`)
 - Build: `[build-dir]` (fresh/stale — verify with `[probe command]`)
-- Servers/GPUs: `[which GPUs, which RPC servers, ports, env requirements]`
+- Hardware/services: `[which devices, which remote services/endpoints, ports, env requirements]`
 - Model: `[path]`
 - Existing work: `[branch/commit/worktree with prior partial work]`
 

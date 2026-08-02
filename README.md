@@ -24,6 +24,13 @@ comes from a real incident where the naive approach produced a wrong answer.
 If you're an agent arriving here, you don't need to know all 40 skills. You need
 to answer **one question: "what am I trying to do?"** Then pick the right tool:
 
+- **"I'm orchestrating a whole campaign (or part of one)."** → read
+  [docs/orchestration-playbook.md](docs/orchestration-playbook.md) first — the
+  generalized dispatch + orchestration playbook: the dispatch-brief anatomy,
+  agent-assignment map, lock/lease rules, resume-after-kill discipline, and the
+  failure lessons. It's the parent-agent's operating manual; the
+  `orchestration-dispatch` skill is its loadable pointer + templates.
+
 - **"Should we build X / which fix is best / is idea Y viable?"** →
   `research-pipeline` (generic) or `rpc-research-pipeline` (RPC flavor).
   These run the idea→evidence→decision funnel: baseline → fireplace → research

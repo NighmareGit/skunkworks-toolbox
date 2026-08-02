@@ -119,6 +119,14 @@ contract changes or a new leak class is found.
 
 ---
 
+## 5.5 Orchestration playbook (first-read for parent agents)
+
+If you are (or are writing prompts for) the **parent/orchestrator agent** of a
+multi-agent campaign, read **`docs/orchestration-playbook.md`** before dispatching
+anything — it is the generalized dispatch-brief anatomy, agent-assignment map,
+lock/lease rules, resume-after-kill discipline, and failure lessons. The
+`orchestration-dispatch` skill points to it and carries the reusable templates.
+
 ## 6. Quick reference (copy into prompts)
 
 ```
