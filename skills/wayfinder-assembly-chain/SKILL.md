@@ -1,4 +1,6 @@
 ---
+> **Dispatch layer:** for the per-ticket dispatch anatomy, agent-assignment
+> map, and orchestration rules, see `orchestration-dispatch` (skill) + `docs/orchestration-playbook.md` + `docs/pattern-recognition.md`.
 name: wayfinder-assembly-chain
 description: Goal-driven multi-agent assembly chain with Wayfinder attack-vector planning, parallel research, isolated worktrees, TDD/prototype loops, verification gates, and parent re-evaluation. Use when running systematic multi-agent campaigns that must scale, measure, kill failed vectors, and converge on a hard performance or correctness goal.
 ---

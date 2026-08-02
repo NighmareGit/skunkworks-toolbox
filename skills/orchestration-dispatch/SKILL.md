@@ -18,7 +18,8 @@ that first. This skill is the loadable pointer + the two reusable templates.
 | File | What it is |
 |------|-----------|
 | `docs/orchestration-playbook.md` (repo docs/) | The canonical, project-neutral playbook (doctrine, loop, 9-part anatomy, assignment map, orchestration rules, resume discipline, kill discipline, session lifecycle, failure lessons) |
-| `templates/dispatch-brief.md` | Copy-paste skeleton for every ticket prompt |
+| `templates/dispatch-brief.md` | Copy-paste skeleton for implementation tickets |
+| `templates/verification-brief.md` | Copy-paste skeleton for measurement-only tickets (the safest first dispatch) |
 | `templates/state-file-schema.md` | The per-ticket state contract every agent writes |
 
 ## The 30-second version (full detail in the playbook)
@@ -45,7 +46,8 @@ that first. This skill is the loadable pointer + the two reusable templates.
 
 ## Templates
 
-- `templates/dispatch-brief.md` — the ticket-prompt skeleton
+- `templates/dispatch-brief.md` — the implementation-ticket prompt skeleton
+- `templates/verification-brief.md` — the measurement-only ticket skeleton (pre-specified command, hard budget, "record blocked and return" exit)
 - `templates/state-file-schema.md` — the state-file contract
 
 ## Where this came from

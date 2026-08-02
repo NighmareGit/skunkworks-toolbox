@@ -1,4 +1,6 @@
 ---
+> **Dispatch layer:** for the per-ticket dispatch anatomy, agent-assignment
+> map, and orchestration rules, see `orchestration-dispatch` (skill) + `docs/orchestration-playbook.md` + `docs/pattern-recognition.md`.
 name: alpha-wayfinder
 description: Evolved Wayfinder pipeline with dependency-mapped vectors, three-tier gates, confidence accumulation, toolbox dispatch (parallel-subprocess, model-pipeline-queue, optimization-blueprint, skill-architect), checkpoint protocol, multi-campaign nesting, and convergence-based termination. The successor to beta-wayfinder. Use when running systematic campaigns where vectors have ordering constraints, partial wins matter, and you need to decide when to stop.
 ---

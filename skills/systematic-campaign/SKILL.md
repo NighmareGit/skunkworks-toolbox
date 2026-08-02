@@ -1,4 +1,6 @@
 ---
+> **Dispatch layer:** for the per-ticket dispatch anatomy, agent-assignment
+> map, and orchestration rules, see `orchestration-dispatch` (skill) + `docs/orchestration-playbook.md` + `docs/pattern-recognition.md`.
 name: systematic-campaign
 description: >
   Run a multi-target systematic campaign: triage missed metrics → wayfinder per target → parallel research → grill + red-team → spec + implement → verify → code-review → integrate. Uses a Rhai workflow under the hood. Includes model routing: local models for code, frontier for strategy, web_search for research. Trigger phrases: "run a campaign", "systematic fix", "multi-target loop", "fix the misses", "/systematic-campaign", "/campaign".
