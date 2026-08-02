@@ -16,7 +16,7 @@ comes from a real incident where the naive approach produced a wrong answer.
 |-----|----------|----------------|
 | `skills/` | Reusable skills (43) — general + project-flavored | A capability graduates here when it appears in **2+ places** (skill-architect reusability gate) |
 | `workflows/` | Rhai workflows for project automation | Stays in its originating project until a **second consumer** exists; then promoted + generalized here |
-| `scripts/` | Reusable shell/python helpers (bisect template, hitl loop template, lock helper) | Same 2-consumer rule |
+| `scripts/` | Reusable shell/python helpers (bisect template, hitl loop template, lock helper, task-state) | Same 2-consumer rule |
 | `procedures/` | Case-study procedures (e.g. git-bisect-regression-fix, project-initialization) | Written after a hard-won debugging campaign |
 
 ## How to read this repo (for agents)
@@ -87,9 +87,10 @@ the skills.
 
 ## Status
 
-- Skills: 43 (incl. research-pipeline pair, alpha-wayfinder quartet, the
-  assembly-chain + wayfinder family, academic-research, skill-architect tooling)
+- Skills: 44 (incl. research-pipeline pair, alpha-wayfinder quartet, the
+  assembly-chain + wayfinder family, orchestration-dispatch, academic-research,
+  skill-architect tooling)
 - Workflows: 1 (academic-research — the first Rhai workflow, dual-mode focus)
 - Procedures: 1 (git-bisect-regression-fix — the 122B GDN case study)
 
-*Last updated: 2026-08-01*
+*Last updated: 2026-08-02*
