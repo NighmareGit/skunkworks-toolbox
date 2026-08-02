@@ -25,6 +25,7 @@ the parent read these files; an agent that never writes one is invisible and sus
     "gpu_ab": "PENDING/blocked-on"
   },
   "notes": "ground truth, design decisions, deviations from the brief, what to watch",
+  "follow_ups": ["<ticket-id or one-line out-of-scope item>", ...]  // EVERY out-of-scope next step the report mentions. A report that says "follow-up needed" without a follow_ups[] entry is incomplete - the parent extracts these into tickets/LEDGER entries at ticket close.
   "tool_history": ["tool1: purpose", "tool2: purpose"]  // tail only
 }
 ```

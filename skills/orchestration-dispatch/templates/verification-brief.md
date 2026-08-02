@@ -36,6 +36,12 @@ wiring. Keep it FAST (target < [N] tool calls, < [N] min).
 - **[Run 2 variant]:** `[same with the one changed flag]` → record `[metric]` +
   coherence
 
+
+> **Follow-ups:** the report MUST end with a "Follow-ups" section listing every
+> out-of-scope next step (one line each); the state file carries them in
+> `follow_ups[]`. A report that says "follow-up needed" without a follow_ups[]
+> entry is incomplete - the parent extracts them at ticket close.
+
 ### Deliverables (report-first + self-verify)
 
 > The report file is the FIRST deliverable — write it before the state file, and

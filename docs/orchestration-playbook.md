@@ -150,6 +150,19 @@ An agent's report is a claim; the state file + commit + artifact are the evidenc
 Verify on disk before believing a verdict ("don't trust state alone"). This is the
 cheapest bug-prevention the parent has.
 
+**Close-ritual follow-up sweep (the 'untracked follow-up' plug):** at ticket close,
+the parent greps the completed report for out-of-scope markers ("follow-up", "next
+step", "out of scope", "recommended") and extracts every one into a ticket or
+LEDGER entry before marking done. A follow-up that isn't tracked is a follow-up
+that gets lost (source mission: an E-2 recompute-win follow-up sat untracked in a
+report until a sweep caught it; two more were caught the same day). The report's
+"Follow-ups" section + the state file's `follow_ups[]` are the contract.
+
+
+An agent's report is a claim; the state file + commit + artifact are the evidence.
+Verify on disk before believing a verdict ("don't trust state alone"). This is the
+cheapest bug-prevention the parent has.
+
 ---
 
 ## 6. Resume-after-kill discipline

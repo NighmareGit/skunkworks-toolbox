@@ -60,6 +60,12 @@ You are the **[ROLE]** agent for **[TICKET-NAME]** — **[ONE-SENTENCE GOAL]**.
 | [metric] | [GO number] | [ref] |
 | [metric] | [KILL number] | [ref] |
 
+
+> **Follow-ups:** the report MUST end with a "Follow-ups" section listing every
+> out-of-scope next step (one line each); the state file carries them in
+> `follow_ups[]`. A report that says "follow-up needed" without a follow_ups[]
+> entry is incomplete - the parent extracts them at ticket close.
+
 ### Deliverables (report-first + self-verify)
 
 > Rule: for study/research tickets, the report file is the FIRST deliverable —
