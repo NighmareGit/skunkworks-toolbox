@@ -60,7 +60,12 @@ You are the **[ROLE]** agent for **[TICKET-NAME]** — **[ONE-SENTENCE GOAL]**.
 | [metric] | [GO number] | [ref] |
 | [metric] | [KILL number] | [ref] |
 
-### Deliverables
+### Deliverables (report-first + self-verify)
+
+> Rule: for study/research tickets, the report file is the FIRST deliverable —
+> write it BEFORE the LEDGER/state entries (which reference it), and verify it on
+> disk (`ls`/`grep`) before returning. A completion summary with no file on disk
+> is a claim, not a deliverable.
 
 - Commit: `[branch]` @ `[expected message]`, pushed to `[remotes]`
 - Report: `[path]` — [what it must contain]

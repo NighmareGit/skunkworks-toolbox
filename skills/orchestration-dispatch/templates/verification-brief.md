@@ -36,7 +36,11 @@ wiring. Keep it FAST (target < [N] tool calls, < [N] min).
 - **[Run 2 variant]:** `[same with the one changed flag]` → record `[metric]` +
   coherence
 
-### Deliverables
+### Deliverables (report-first + self-verify)
+
+> The report file is the FIRST deliverable — write it before the state file, and
+> verify it on disk (`ls`/`grep`) before returning. A completion summary with no
+> file on disk is a claim, not a deliverable.
 
 - Report `[path]`: both runs (config, numbers, output, coherence verdict), the
   EXACT commands used, and a note on what baseline this compares to

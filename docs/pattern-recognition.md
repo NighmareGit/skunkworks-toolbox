@@ -61,6 +61,15 @@ Diagnose the pointer.
 - **Over-specification warning:** specifying *how* when the agent should decide
   *what* produces a typist, not an engineer. Specify the *seam* and the
   *constraint*, let the agent implement.
+- **Report-first ordering (the "agent skipped the report write" pattern):**
+  study/research agents can produce the analysis + a ledger entry (their natural
+  output) and then *skip the report-file write* while claiming it in the
+  completion summary — a summary with no file on disk is a claim, not a
+  deliverable. Rule: in any study/research brief, **the report file is the FIRST
+  deliverable** (written before the ledger entry, which references it), and the
+  brief mandates **self-verification** (`ls`/`grep` the artifact) before the
+  agent returns. (Source mission: two do-ability studies in one wave both
+  returned summaries with the report absent on disk.)
 
 ## 4. The confound detector (when a kill isn't a kill)
 
