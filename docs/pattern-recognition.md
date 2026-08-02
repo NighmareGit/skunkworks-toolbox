@@ -67,6 +67,14 @@ Diagnose the pointer.
   implementation/research agent has. Rule: fetching remote content (PR diffs,
   raw files, APIs) is a curl job; never accept "couldn't fetch" from an agent
   that didn't attempt curl (source mission: F25-DESIGN's diff-fetch gap, 08-02).
+- **The phantom tool-caller (the "0 real tool calls" failure):** an agent can
+  "run" commands in a hallucinated internal conversation — the harness records 0
+  real tool calls, the transcript shows fake turns with typo'd paths looping the
+  same commands, then it claims success with NO artifacts on disk. Detection:
+  0 tool calls + a completion claim + no files = automatic failure. NEVER resume a
+  poisoned transcript (the hallucination propagates) — fresh re-dispatch with an
+  explicit anti-fabrication contract: every claim needs a disk artifact, real
+  tool calls only, report-first + self-verify. (Source mission: STEAL-F28, 08-02.)
 - **Report-first ordering (the "agent skipped the report write" pattern):**
   study/research agents can produce the analysis + a ledger entry (their natural
   output) and then *skip the report-file write* while claiming it in the
