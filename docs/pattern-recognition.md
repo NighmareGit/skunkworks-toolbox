@@ -141,6 +141,12 @@ In a fresh session: dispatch a **measurement** ticket first (calibrates your rea
 on agent health), then **read-only research** in parallel, then **implementation**
 once the design is evidence-backed.
 
+**Executable form:** the source project's specialized copy carries a literal
+`first-3-loops-checklist.md` (real paths + commands) — ground-truth verification →
+read the judgment layer → one measurement calibration dispatch → close one ticket
+end-to-end. Replicate that pattern in any new project: 4 loops, each with explicit
+pass criteria, before trusting your read on implementation tickets.
+
 ---
 
 *Living document — every new campaign pattern gets a row here (generalized) +
