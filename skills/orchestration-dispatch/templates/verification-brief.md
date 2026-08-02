@@ -2,13 +2,13 @@
 
 > The sibling of `dispatch-brief.md`: for tickets that produce a NUMBER, a PASS/FAIL
 > verdict, or a measurement — nothing to build. These are the safest dispatches in a
-> campaign (they never stall: no scope to wander, a hard budget, a pre-specified
+> campaign (they never stall: no scope to wander, a small budget, a pre-specified
 > command) and the recommended **first dispatch of a fresh session** (calibrates the
 > parent's read on agent health).
 >
 > Anatomy difference vs implementation briefs: the **exact command is pre-specified**
-> (so the number is reproducible and comparable), the budget is **hard and small**
-> (< 15 calls, < 25 min), and there is a legitimate **"record blocked and return"**
+> (so the number is reproducible and comparable), the budget is **small by design**
+> (< 15 calls, < 25 min is the norm, NOT a hard cap), and there is a legitimate **"record blocked and return"**
 > exit (a down service is not the agent's failure).
 
 ## Prompt
@@ -53,9 +53,12 @@ wiring. Keep it FAST (target < [N] tool calls, < [N] min).
 
 ## Orchestration notes
 
-- **Budget:** < 15 calls, < 25 min is the norm. A measurement ticket that takes
-  longer is either blocked (check the service) or mis-scoped (it became an
-  investigation — split it).
+- **Budget is a loop/hang detector, not an accounting cap.** < 15 calls, < 25 min
+  is the norm; an overrun WITH deliverables + evidence on disk is fine (never a
+  failure on its own), an overrun WITH zero writes / repeated identical calls is
+  the loop signal. Trust the harness tool-call count, not the agent's self-report.
+  A measurement ticket that takes much longer is usually blocked (check the
+  service) or mis-scoped (it became an investigation — split it).
 - **Comparability:** the pre-specified command is what makes the number mean
   something. Never let a measurement agent improvise the harness; state the
   baseline it must match (same build, same flags, same hardware).

@@ -70,7 +70,10 @@ You are the **[ROLE]** agent for **[TICKET-NAME]** — **[ONE-SENTENCE GOAL]**.
 
 ## Orchestration notes for the parent
 
-- **Budgets:** research 15-30 calls; implementation 30-45; measurement 15-25.
+- **Budgets are stall signals, not caps:** research 15-30 calls; implementation
+  30-45; measurement 15-25. An overrun with deliverables + evidence is fine; an
+  overrun with zero writes / repeated identical calls = loop. Trust the harness
+  count, not the agent's self-report.
   A stalled agent shows ~0 writes and tool-call count climbing slowly — check
   `ps` for zombie builds and `.scratch/locks/` for stale locks before killing.
 - **First-dispatch vs resume:** if a prior dispatch was cancelled, check for its
