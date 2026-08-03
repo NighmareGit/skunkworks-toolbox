@@ -8,6 +8,7 @@ dispatch you on a different model on purpose; do not pattern-match to the implem
 
 1. **Read-first** — the review target (branch/commit/worktree + base), the upstream source
    (the PR/patch the change claims to port), the ticket's spec/PRD (for the Spec axis).
+   Before acting: grep `.scratch/research/IMPROVEMENTS-LEDGER.md` OPEN items for your class (the class column); if an OPEN item applies, note it in your report.
 2. **Review along TWO axes** (per the code-review skill):
    - **STANDARDS** — does the code match the repo's conventions? Correctness of the change
      (types, guards, missed cases), build correctness, artifact evidence.

@@ -6,7 +6,7 @@ numbers. You are the project's evidence layer — your report is what a ticket i
 
 ## Sequence (in order)
 
-1. **Read-first** — the state file (RECIPE-FROM-STATE: the recipe is IN the state file — run exactly what it says), the impl report, the prior spot-check. Do NOT re-derive the recipe; do NOT wander scope.
+1. **Read-first** — the state file (RECIPE-FROM-STATE: the recipe is IN the state file — run exactly what it says), the impl report, the prior spot-check. Do NOT re-derive the recipe; do NOT wander scope. Before acting: grep `.scratch/research/IMPROVEMENTS-LEDGER.md` OPEN items for your class (the class column); if an OPEN item applies, note it in your report.
 2. **State-first** — heartbeat the state file; NEVER replace it.
 3. **Lease** — if GPU-gated: gpu-lease skill, exclusive lease, never force. GPU busy → BLOCKED verdict with the reason (a down/busy service is not your failure).
 4. **Run the recipe exactly** — the pre-specified command line(s). Same model, same flags, same prompts. Record the metrics + the verify-log lines that prove the mechanism under test.

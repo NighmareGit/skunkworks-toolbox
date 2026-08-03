@@ -6,7 +6,7 @@ ticket end-to-end. Your verdict decides whether the idea is PORTED, BANKED, or K
 
 ## Sequence (in order)
 
-1. **Read-first** — the feedstock (steal-list row, seam report, prior doability study, state file). The seam report is the arg-packer's output: trust its PORT-AS-IS / ADAPT / KILL read, but FALSIFY it against the real code.
+1. **Read-first** — the feedstock (steal-list row, seam report, prior doability study, state file). The seam report is the arg-packer's output: trust its PORT-AS-IS / ADAPT / KILL read, but FALSIFY it against the real code. Before acting: grep `.scratch/research/IMPROVEMENTS-LEDGER.md` OPEN items for your class (the class column); if an OPEN item applies, note it in your report.
 2. **State-first** — heartbeat the state file (real ISO timestamp, your id); NEVER replace it.
 3. **Worktree** — worktree-guard: create `worktrees/<ticket>/` off the base, branch `steal/<id>`. Never touch the main checkout.
 4. **Fetch** — fetch the upstream diff (git fetch / curl the .patch). Read it fully; truncate only the noisy middle.
@@ -30,6 +30,7 @@ ticket end-to-end. Your verdict decides whether the idea is PORTED, BANKED, or K
    ```
    **Self-check**: the chosen target must actually compile the seam file — the seam's .o must appear in the build dir (grep compile_commands.json / the CMake target sources for the seam filename); a target that does not compile the seam is the WRONG target. **Artifact-verify**: nm/strings/disassembly prove the new code is in the built artifact (never trust "Built target"); object mtime > source mtime. **Provenance**: evidence must trace to THIS worktree's build of HEAD — artifact path inside the worktree-local build dir; borrowed evidence (another worktree's build, a sibling arm's artifact) is a FAILURE. **Cleanliness**: worktree AND main tree git status clean before close — any dirty tracked file is yours to revert or explain in the report.
    **Revert trigger**: B1 is KILLED (and the build-marker wrapper un-deferred) if the next steal ticket's build-stage report shows borrowed artifacts, an artifact path outside the worktree-local build dir, or the self-check grep skipped.
+   **Skill**: load the `build-verify` skill (`/build-verify`) and run its checks (seam→target map, self-check cascade, provenance contract P1–P6, dual-tree cleanliness) before any "build-clean" claim. The skill is the loadable form of the rules above — terse, procedural, machine-wide.
 8. **Verdict + close** — IMPL / BANK / KILL with the evidence table. Report FIRST (the project's report path), then ledger entry (the project's numbering convention), then state → complete, then commit + push. Steal-list row update. Lessons field.
 
 ## Discipline

@@ -9,6 +9,7 @@ pointer / wrong binding, not data corruption** — diagnose the binding before b
 1. **Repro-first** — reproduce the bug exactly as recorded (bug ledger entry + ticket repro).
    Record the failure precisely (actual vs expected output, the crash, the log lines).
    Do NOT start fixing until the repro is captured — the repro is the falsify-first input.
+   Before acting: grep `.scratch/research/IMPROVEMENTS-LEDGER.md` OPEN items for your class (the class column); if an OPEN item applies, note it in your report.
 2. **Read-first** — the bug ledger entry (all required fields), the prior diagnosis trail
    (bisect reports, prior fix attempts — bugs are often multi-component), the suspect code (file:line).
 3. **State-first** — heartbeat the state file; NEVER replace it.

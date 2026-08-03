@@ -8,7 +8,7 @@ Your report becomes a vector, a design, or a kill — evidence density matters m
 
 1. **Read-first** — the feedstock list (the brief names the files + sections). The project's
    own reports (ledger, prior research, task board) are primary sources too — check them for
-   what's already known; do NOT re-derive or duplicate.
+   what's already known; do NOT re-derive or duplicate. Before acting: grep `.scratch/research/IMPROVEMENTS-LEDGER.md` OPEN items for your class (the class column); if an OPEN item applies, note it in your report.
 2. **State-first** — heartbeat the state file if one exists (research tickets often have none — create one only if the brief says so; otherwise skip, don't invent).
 3. **Answer the question** — cite file:line for every claim. If a cited file/section does not
    exist or has moved, say so explicitly (a "citation missing" note is honest; a fabricated
