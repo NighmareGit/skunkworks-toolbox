@@ -59,8 +59,9 @@ example): `lessons/`, `learning-records/`, `reference/`, `assets/`.
 4. Workflow → `.grok/workflows/academic-research.rhai` (+ a mission workflow once the goal sharpens — reference example: the living project's `gdn-fix-pipeline.rhai`)
 5. *(local-only, optional)* Home-lab agent defs (e.g. jupiter-analyzer) — add locally; NOT part of a public mint
 6. Lock helper → `.scratch/scripts/lock.sh` — **shipped by the toolbox** (`scripts/lock.sh`)
-7. MCP assets → `mcp/` (searxng node script from the global config; `academic_mcp.py` + README + requirements from the academic-research skill)
-8. **Sanitize sweep:** grep the copied tree for internal refs (LAN IPs, `user@host`, personal paths) and redact to `<PLACEHOLDER>`s.
+7. State helper → `.scratch/scripts/task-state.py` — **shipped by the toolbox** (`scripts/task-state.py`); per-ticket JSON checkpoints in `.scratch/task-state/`
+8. MCP assets → `mcp/` (searxng node script from the global config; `academic_mcp.py` + README + requirements from the academic-research skill)
+9. **Sanitize sweep:** grep the copied tree for internal refs (LAN IPs, `user@host`, personal paths) and redact to `<PLACEHOLDER>`s.
 
 ## 4. Wire secrets (values stay OUT of the repo)
 
@@ -122,7 +123,8 @@ Add to AGENTS.md (Appendix A already carries these — verify, don't re-add):
 - [ ] Leak scan clean: no secret values, no personal paths in the tree
 - [ ] `.scratch/` has all 14 dirs; `worktrees/` scaffolded (empty is normal)
 - [ ] `.env` / `secrets/` ignored (`git check-ignore`)
-- [ ] `scripts/sync-secrets.sh` (App D) + `.scratch/scripts/lock.sh` (toolbox `scripts/lock.sh`) present
+- [ ] `scripts/sync-secrets.sh` (App D) + `.scratch/scripts/lock.sh` + `.scratch/scripts/task-state.py` (toolbox) present
+- [ ] AGENTS.md carries the Step-1 Restore-State hook (task-state auto-load) + `/tmp` scratch policy
 - [ ] *(local-only)* `.grok/agents/` populated only when the project uses home-lab agents
 - [ ] Topology section filled (§7) — not a placeholder
 - [ ] *(collection only, App C)* `META_SCAFFOLD.md` present, AGENTS.md points to it,
@@ -154,6 +156,13 @@ pointer line applies only to collection projects (Appendix C).
 
 > **Status:** mission defined <YYYY-MM-DD> — <mission one-liner>. See `MISSION.md`.
 > *(collection projects only)* **Operating procedure:** `META_SCAFFOLD.md` — read first; highest-priority operating procedure.
+
+## Step 1 — Restore State (auto-load)
+
+Before any work, resume the latest checkpoint via the **task-state** skill:
+`python3 .scratch/scripts/task-state.py get <ticket>` (state files in `.scratch/task-state/`).
+Save before compaction and after each significant step. Throwaway scripts and build
+artifacts → `/tmp`; durable state → `.scratch/`.
 
 ## Primary Goal (immutable)
 
@@ -270,7 +279,8 @@ pushing there.
 
 ## Scratch Policy
 
-- Durable state → `.scratch/`
+- Durable state → `.scratch/` (incl. task-state checkpoints)
+- Throwaway scripts and build artifacts → `/tmp` (never `.scratch/`)
 - Ephemeral per-agent notes → `/tmp/agent-<id>-<timestamp>.scratch.md`
 
 ## Conventions
@@ -663,3 +673,26 @@ Initialized <YYYY-MM-DD> — mission defined / pending (see `MISSION.md`).
 | `.scratch/` | Working area |
 | `.grok/` | Project-local skills, agents, workflows |
 ```
+
+### D.10 `.scratch/task-state/` — per-ticket checkpoint (schema v2.0.0)
+
+Created and updated by `.scratch/scripts/task-state.py` (toolbox). Fields are read
+by `agent-monitor` (heartbeat, status, tool_history) and by the parent (resume point):
+
+```json
+{
+  "ticket": "T1",
+  "stage": "research | implement | verify | review | done",
+  "status": "in_progress | done | failed | blocked",
+  "heartbeat": "ISO-8601 (updated on every write)",
+  "next_action": "the very next step, in one line",
+  "artifacts": ["worktrees/<ticket>", "branch <name>"],
+  "tool_history": ["cmd1", "cmd2", "..."],
+  "blocked_by": ["T2"]
+}
+```
+
+Commands: `task-state.py get|set|heartbeat|history|bump <ticket> [...]`. Set
+`TASK_STATE_DIR` env to override the state dir (e.g. per-campaign subdirs).
+Save BEFORE compaction and after each significant step. Throwaway scripts and
+build artifacts → `/tmp`, never `.scratch/`.
