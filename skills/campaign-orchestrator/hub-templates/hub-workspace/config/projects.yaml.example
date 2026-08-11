@@ -1,0 +1,19 @@
+# Project Registry — maps project names to their paths and entry points.
+
+projects:
+  atomic-grinder:
+    path: {{PROJECTS_ROOT}}/atomic-grinder
+    agents_md: agents.md
+    description: Rust CLI for atomizing AI workflows into atomic tickets
+
+  grok:
+    path: {{PROJECTS_ROOT}}/grok
+    agents_md: agents.md
+    description: Orchestration hub — skills, campaigns, tools
+
+  may-market-swing:
+    path: {{PROJECTS_ROOT}}/grok/may-market-swing
+    agents_md: README.md
+    description: Multi-agent market research system with Docker, MCP, and prompt pipelines
+
+  # Add new projects here as needed

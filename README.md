@@ -100,7 +100,7 @@ the skills.
 
 ## Status
 
-- Skills: 44 (incl. research-pipeline pair, alpha-wayfinder quartet, the
+- Skills: 48 (incl. campaign-orchestrator, research-pipeline pair, alpha-wayfinder quartet, the
   assembly-chain + wayfinder family, orchestration-dispatch, academic-research,
   skill-architect tooling)
 - Workflows: 1 (academic-research — the first Rhai workflow, dual-mode focus)
