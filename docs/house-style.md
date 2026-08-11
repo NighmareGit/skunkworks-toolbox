@@ -87,6 +87,12 @@ The auto-wire does **not** set `depends_on` — fix it in CAMPAIGN.json after sc
 - Seeded + reproducible; **per-model labels on heterogeneous pools** (free-tier pools especially).
 - **Server ctx guards:** silent truncation past n_ctx is real (32K server accepted 87K prompts
   with garbage) — fail-fast guards, verify n_ctx before long runs.
+- **Slot / KV-cache awareness (local pools):** local llama-servers are slot-bounded and
+  KV-cache-sensitive — parallel clients beyond the slot count queue, evict contexts, and corrupt
+  latency metrics (measured: 6 clients on a 2-slot server). Check `/slots` + `/metrics` before
+  fan-out; keep the overflow queue in the dispatcher; group same-prefix requests to reuse KV;
+  default to serial for latency-critical/metric work. (2026-08-11 lesson, folded into the
+  `route` tool spec.)
 - **Stale-task guards:** idempotent generators reuse stale files (row-count mismatch) — delete/
   regenerate on mismatch.
 - Small-N honesty: state the N and the caveat.
@@ -119,7 +125,10 @@ The auto-wire does **not** set `depends_on` — fix it in CAMPAIGN.json after sc
 7. A small-model "can't do X" verdict can be harness-guidance, not a model ceiling — steer the
    root (direct strategy preference + deterministic helper + explicit fallback) before blaming
    the model. (A coder-14B went 1/3 → 3/3 at 119K with steering.)
-8. Fixed pipelines underperform adaptive orchestration: decompose on demand (router-gated), not
+9. Local model servers are slot-bounded: parallel fan-out beyond the slot count thrashes the KV
+   cache and corrupts latency metrics — serialize local legs (one request at a time, seeds batched
+   in one process) and probe `/slots` before heavy runs.
+10. Fixed pipelines underperform adaptive orchestration: decompose on demand (router-gated), not
    as a mandatory hop (U-shaped granularity, escalation-cliff evidence).
 
 ---
