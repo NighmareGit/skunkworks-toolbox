@@ -32,7 +32,10 @@ to answer **one question: "what am I trying to do?"** Then pick the right tool:
   `orchestration-dispatch` skill is its loadable pointer + templates. Pair it
   with [docs/pattern-recognition.md](docs/pattern-recognition.md) — the
   judgment layer (agent-health triage, signature diagnostics, brief
-  calibration, the three dispatch archetypes with skeleton exemplars).
+  calibration, the three dispatch archetypes with skeleton exemplars). For the
+  *artifact* conventions of a research campaign (MISSION/task/report skeletons,
+  workflow shape, ledgers, measurement discipline, scar list), see
+  [docs/house-style.md](docs/house-style.md).
 
 - **"Should we build X / which fix is best / is idea Y viable?"** →
   `research-pipeline` (generic) or `rpc-research-pipeline` (RPC flavor).
