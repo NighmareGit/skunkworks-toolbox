@@ -103,6 +103,12 @@ The auto-wire does **not** set `depends_on` — fix it in CAMPAIGN.json after sc
 - **Log to DECISIONS.md** (append-only, timestamped `## YYYY-MM-DD T+HH:MM — <event>`); **save
   state** to `.scratch/task-state/<id>.json` before compaction / phase changes; update the
   **RESEARCH.md tracker** on completion.
+- **Run `wf-guard.py` before every workflow launch/relaunch**
+  (`scripts/wf-guard.py --name <workflow> --pattern <workload-regex> [--exclude <regex>]`).
+  Run state is NOT a liveness oracle in either direction — "active" can be a dead stale record,
+  "cancelled" can still be executing. Ground truth = agent metas (`completed_at`) + live
+  processes. Exit 1 (LIVE) = investigate, do not launch. After cancelling, `scripts/wf-sweep.sh
+  --pattern <regex>` lists orphaned workload processes (add `--kill` to TERM them).
 - **Kill + relaunch** for stuck/mis-framed workflows: find the subagent session under
   `~/.grok/sessions/.../<uuid>/summary.json` (agent_name + title confirm identity), kill by
   task_id, fix framing, relaunch. A killed run completes `0/N verified` — expected aborted outcome.
@@ -125,11 +131,18 @@ The auto-wire does **not** set `depends_on` — fix it in CAMPAIGN.json after sc
 7. A small-model "can't do X" verdict can be harness-guidance, not a model ceiling — steer the
    root (direct strategy preference + deterministic helper + explicit fallback) before blaming
    the model. (A coder-14B went 1/3 → 3/3 at 119K with steering.)
+8. Fixed pipelines underperform adaptive orchestration: decompose on demand (router-gated), not
+   as a mandatory hop (U-shaped granularity, escalation-cliff evidence).
 9. Local model servers are slot-bounded: parallel fan-out beyond the slot count thrashes the KV
    cache and corrupts latency metrics — serialize local legs (one request at a time, seeds batched
    in one process) and probe `/slots` before heavy runs.
-10. Fixed pipelines underperform adaptive orchestration: decompose on demand (router-gated), not
-   as a mandatory hop (U-shaped granularity, escalation-cliff evidence).
+10. Run state is not a liveness oracle in either direction. A dead host freezes runs at "active"
+    (stale) while its agents keep running as orphans; cancelling a workflow does not kill its
+    agents' subprocesses (they run on for minutes, duplicating spend and colliding outputs).
+    Before ANY launch/relaunch, read agent metas (`completed_at`) and `pgrep` the workload —
+    `scripts/wf-guard.py --name <wf> --pattern <regex>`, exit 1 = hard block.
+    (2026-08-11: T2 v1 stayed alive 40+ min after its host died; v2's agents ran ~8 min after
+    cancellation — double FMD spend + filename collisions; wf-guard.py born from this.)
 
 ---
 *Portable: pair with the campaign-orchestrator skill bundle (`scripts/scaffold-campaign.py`,
