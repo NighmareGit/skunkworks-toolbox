@@ -15,6 +15,7 @@
 | `AGENTS.research.md` | Research agents | Read-only research — citations, verdict-on-research |
 | `AGENTS.bug-fix.md` | Bug-hunt agents | Repro → diagnose → minimal fix → verify |
 | `AGENTS.review.md` | Reviewer agents | Independent review — standards + spec + verify-on-disk |
+| `AGENTS.master-pm.md` | Master-PM agents | Running the delegated PM cycle — ask → triage → dispatch → adjudicate → next cycle |
 
 ## How the parent wires them
 
