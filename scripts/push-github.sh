@@ -13,7 +13,7 @@
 # Contract: AGENTS.md §"Gitea-only files". Run from the repo root.
 set -eu
 
-REPO="$(cd "$(dirname "$0")/.." && pwd)"
+REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "push-github: not in a git repo — abort" >&2; exit 1; }
 cd "$REPO"
 
 # --- sanity: gitea-only registry must exist ---

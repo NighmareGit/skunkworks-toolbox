@@ -8,7 +8,10 @@
 # Contract: AGENTS.md §"Gitea-only files". Gitea (LAN) pushes are never blocked.
 set -u
 
-REPO="$(cd "$(dirname "$0")/.." && pwd)"
+# NOTE: $0-based dirname resolution is wrong when git invokes the hook by absolute
+# path (.git/hooks/pre-push → .. = .git). Use git discovery — the hook always runs
+# inside the repo.
+REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "pre-push: not in a git repo — refusing" >&2; exit 1; }
 [ -f "$REPO/scripts/gitea-only.txt" ] || exit 0   # no registry → nothing to enforce
 
 GITEA_ONLY=()
