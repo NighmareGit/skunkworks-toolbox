@@ -1,0 +1,10 @@
+# Generated / runtime artifacts — not committed. Regenerate with:
+#   powershell -ExecutionPolicy Bypass -File mcp/register-mcp-servers.ps1
+mcp/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+research/
+
+# Local-check outputs (e2e scratch)
+*.pdf
