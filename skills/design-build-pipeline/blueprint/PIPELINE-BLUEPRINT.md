@@ -48,11 +48,11 @@ For each stage, name:
 | Rail | Rule |
 |------|------|
 | **Gates** | every stage exits on its criterion; nothing fires the next stage on vibes |
-| **Seats** | plan→ds-v4-flash · research→longcat/ds-v4-flash · red-team→ds-v4-flash · code→longcat · review→reviewer · validate→perf-verification |
-| **MPR gate** | every dispatch passes MPR (pro-economy justification on costly seats) |
+| **Seats** | plan→frontier judgment · research→general worker/frontier judgment · red-team→frontier judgment · code→general worker · review→independent reviewer · validate→perf-verification |
+| **Ticket gate** | every dispatch passes ticket validation (pro-economy justification on costly seats) |
 | **Locks** | build lock · source lock · worktree isolation for prototypes |
-| **Discipline** | no-narrative-drift (#187): a spec is a prediction, a procedure needs runs; ADR per kill/adopt |
-| **Scope governor** | flag when North Star tickets are unverified |
+| **Discipline** | no-narrative-drift (a spec is a prediction, a procedure needs runs); ADR per kill/adopt |
+| **Scope governor** | flag when critical-path tickets are unverified |
 
 ## 5. The Convergence Criterion (mandatory)
 

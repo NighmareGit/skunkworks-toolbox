@@ -24,7 +24,10 @@ PATTERNS=(
   'api[_-]?key[[:space:]]*[:=][[:space:]]*[^< ]'  # api_key=value
   'token[[:space:]]*[:=][[:space:]]*[A-Za-z0-9]{20,}'  # long token values
   'Bearer[[:space:]]+[A-Za-z0-9._-]+' # Bearer tokens
-  'http://(?!127\.0\.0\.1)[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'  # http://<ip> internal URLs (loopback exempt)
+  # NOTE: no separate http://<ip> pattern — private ranges (192.168/10/172.16-31)
+  # are covered by the three patterns above regardless of URL scheme. A GNU-grep -E
+  # negative lookahead ((?!127.0.0.1)) is NOT supported and silently matches nothing —
+  # do not reintroduce one here.
 )
 
 FILES=$(git ls-files | grep -vE "^(AGENTS\.md|scripts/sanitize-check\.sh)$")

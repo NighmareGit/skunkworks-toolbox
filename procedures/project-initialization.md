@@ -57,7 +57,7 @@ example): `lessons/`, `learning-records/`, `reference/`, `assets/`.
 2. Scripts → `scripts/` (`bisect-test-template.sh`, `hitl-loop.template.sh`, `sanitize-check.sh`)
 3. Procedure → `.scratch/procedures/git-bisect-regression-fix.md`
 4. Workflow → `.grok/workflows/academic-research.rhai` (+ a mission workflow once the goal sharpens — reference example: the living project's `gdn-fix-pipeline.rhai`)
-5. *(local-only, optional)* Home-lab agent defs (e.g. jupiter-analyzer) — add locally; NOT part of a public mint
+5. *(local-only, optional)* Home-lab agent defs (e.g. `<host>-analyzer`) — add locally; NOT part of a public mint
 6. Lock helper → `.scratch/scripts/lock.sh` — **shipped by the toolbox** (`scripts/lock.sh`)
 7. State helper → `.scratch/scripts/task-state.py` — **shipped by the toolbox** (`scripts/task-state.py`); per-ticket JSON checkpoints in `.scratch/task-state/`
 8. MCP assets → `mcp/` (searxng node script from the global config; `academic_mcp.py` + README + requirements from the academic-research skill)
@@ -589,7 +589,7 @@ project's `.scratch/locks/`. Usage:
 ---
 
 *Docs seeds (`GOAL.md` / `SESSION_LOG.md` / `scaffold-changelog.md`) and agent
-definitions (e.g. jupiter-analyzer) are deliberately NOT in the common templates:
+definitions (e.g. `<host>-analyzer`) are deliberately NOT in the common templates:
 docs seeds are created by the ask-matt initialization (Appendix B.3); agent defs
 are home-lab local — omit on public projects. Root docs (`MISSION.md`, `NOTES.md`,
 `RESOURCES.md`, `README.md`) ARE mint-time files — templates D.6–D.9 below.

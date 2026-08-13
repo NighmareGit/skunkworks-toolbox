@@ -5,7 +5,7 @@ Wraps the producer chain so the dispatcher's queue fills without hand-tokening t
     need (source JSON minus generated fields)
       → render <ticket>.source.json
       → rhai-builder --manifest   (emits args.json + phase2-ticket.json + manifest)
-      → validate-ticket           (the MPR gate — FAIL = source problem, never a force-through)
+      → validate-ticket           (the validation gate — FAIL = source problem, never a force-through)
       → ticket-claim (optional)   (the queue reservation)
       → report: the ticket path + the dispatch command
 
@@ -55,7 +55,7 @@ def main():
     ap.add_argument("--dispatches-dir", default=DEFAULT_DISPATCHES)
     ap.add_argument("--owner", default="parent")
     ap.add_argument("--claim", action="store_true", help="reserve the ticket via ticket-claim.sh")
-    ap.add_argument("--no-validate", action="store_true", help="skip the MPR gate (debug only)")
+    ap.add_argument("--no-validate", action="store_true", help="skip the validation gate (debug only)")
     args = ap.parse_args()
 
     # 1. Load + validate the need.
@@ -90,10 +90,10 @@ def main():
     if not os.path.exists(ticket_path):
         die(f"emission produced no ticket at {ticket_path}")
 
-    # 4. The MPR gate.
+    # 4. The validation gate.
     if not args.no_validate:
         vt = os.path.join(SCRIPTS, "validate-ticket.py")
-        run([sys.executable, vt, ticket_path], "MPR gate (validate-ticket)")
+        run([sys.executable, vt, ticket_path], "validation gate (validate-ticket)")
 
     # 5. The queue reservation.
     if args.claim:

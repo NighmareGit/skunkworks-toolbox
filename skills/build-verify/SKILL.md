@@ -61,7 +61,7 @@ falsified by the build system's own dependency data.
 
 ## 3. Build + Artifact Verification
 
-Acquire the build lock (`atomic-llama-cpp-turboquant/.scratch/locks/lock.sh`),
+Acquire the build lock (`<FORK_ROOT>/.scratch/locks/lock.sh`),
 build, release. Then prove:
 
 | Check | Command | Proves |

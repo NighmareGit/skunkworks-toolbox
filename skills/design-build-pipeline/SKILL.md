@@ -40,9 +40,9 @@ nothing fires the next stage until the previous one passes.
 [8] to-PRD    — the /to-prd skill: PRD (problem/solution/user stories/impl+testing decisions)
                  + the ONE highest seam + USER SEAMS-CHECKPOINT + publish ready-for-agent
 [9] PLAN      — the build plan (plan seat)
-[10] TDD      — red-green-refactor (longcat; the tdd skill)
-[11] PROTOTYPE— worktree-isolated (worktree-guard; longcat)
-[12] CODE-REVIEW — standards + spec axes (reviewer seat / ds-v4-flash)
+[10] TDD      — red-green-refactor (a general worker model; the tdd skill)
+[11] PROTOTYPE— worktree-isolated (worktree-guard; a general worker model)
+[12] CODE-REVIEW — standards + spec axes (an independent reviewer — a different model from the implementer)
 [13] VALIDATE — perf-verification contract + echo-rejected scoring + the deliverable gate
 [14] LOOP     — until the convergence criterion (the KPI / done-definition) is met
 [15] INTEGRATE— merge to main + ADR + the CONSUMPTION contract (who consumes it, loop closure)
@@ -53,11 +53,11 @@ nothing fires the next stage until the previous one passes.
 | Rail | Rule |
 |------|------|
 | **Gates** | each stage exits on its gate: falsification probes at [6], blockers at [7], seams-checkpoint at [8], perf-verification + deliverable-gate at [13] |
-| **Seats** | plan→ds-v4-flash · research→longcat/ds-v4-flash · red-team→ds-v4-flash · tdd/code→longcat · review→reviewer (ds-v4-flash) · validate→perf-verification |
-| **MPR gate** | every dispatch passes the MPR validation (pro-economy justification on costly seats) |
+| **Seats** | plan→frontier judgment · research→general worker/frontier judgment · red-team→frontier judgment · tdd/code→general worker · review→independent reviewer (different model from the implementer) · validate→perf-verification |
+| **Ticket gate** | every dispatch passes the ticket-validation gate (pro-economy justification on costly seats) |
 | **Locks** | build lock before builds; source lock for shared-file edits; worktree isolation for prototypes |
-| **Discipline** | #187 no-narrative-drift (a spec is a prediction, a procedure needs runs); falsification over vibes; ADR for every kill/adopt |
-| **Scope governor** | flag when North Star tickets are unverified (>2 → WARN before new South Star builds) |
+| **Discipline** | no-narrative-drift (a spec is a prediction, a procedure needs runs); falsification over vibes; ADR for every kill/adopt |
+| **Scope governor** | flag when critical-path tickets are unverified (>2 → WARN before new capability builds) |
 
 ## The Convergence Criterion
 

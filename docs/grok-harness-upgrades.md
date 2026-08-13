@@ -89,7 +89,7 @@ has to bolt them on.
 
 ### 8. ENV BAKED AT PROCESS START
 - **Issue:** the model key resolution (`env_key`) reads the env at process start — swapping to a
-  new API key required a FULL GROK RESTART (the longcat quota-dead-key incident, this session).
+  new API key required a FULL GROK RESTART (a quota-dead-key incident, this session).
 - **Patch:** inline `api_key` in `[model.<name>]` wins over `env_key` (documented resolution
   order) — but the running session may still cache config.
 - **Upstreamable:** per-model key re-resolution on use (read the env at call time, not process
