@@ -2,7 +2,7 @@
 
 > **Created:** 2026-08-04 (the framing: the orchestrator delegates the master-PM role instead
 > of role-playing it — the harness allows agent personas; the delegated role is exercised
-> live by the project's sibling machine).
+> live by the project's delegated instance).
 > **Seat:** the standard judgment model (triage, routing, adjudication — strong, cheap,
 > available). A premium reasoning model is the sparing deep-reasoning exception for hard
 > adjudications (the economy constraint: use where it counts, never by default).
