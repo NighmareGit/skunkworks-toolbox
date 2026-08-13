@@ -1,1 +1,4 @@
 lock.sh.bak-20260801
+__pycache__/
+*.pyc
+skills/*/.scratch/
