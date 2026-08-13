@@ -60,6 +60,29 @@ value with a placeholder and document the substitution in the skill's own text:
 "replace `<MODEL_PATH>` with your model location". The skill stays usable as a
 template; nothing internal leaks.
 
+### 2.4 Gitea-only files (never push GitHub)
+
+Some content is useful to us but not to the public — project-specific enough that
+generalizing it would cost more than it returns. Those files stay in the LAN mirror
+only. The registry is `scripts/gitea-only.txt` (one path per line); the rationale
+for each entry:
+
+| Path | Why it stays LAN-only |
+|------|-----------------------|
+| `skills/multi-gpu-verify/` | Project-specific hardware/RPC inventory (internal GPU nodes, model files, RPC endpoints). Verifying multi-GPU correctness against THIS fleet is not a general capability; the verification pattern itself is already captured by the project's docs. Candidate to move to the project repo if the project ever owns its own copy. |
+
+**Enforcement (mechanical, not a request):**
+1. `.git/hooks/pre-push` (source: `scripts/pre-push.sh`) refuses any push to the
+   `github` remote while a gitea-only path is in the pushed tree. Re-install after
+   a fresh clone: `ln -s ../../scripts/pre-push.sh .git/hooks/pre-push`.
+2. `scripts/push-github.sh` is the ONLY sanctioned GitHub push: it builds a filtered
+   tree (gitea-only paths removed), runs `scripts/sanitize-check.sh` on that tree,
+   then pushes. Direct `git push github master` is refused by the hook.
+3. Gitea pushes are never blocked — the LAN mirror always carries the full tree.
+
+**When a gitea-only file changes:** update it, commit, push gitea (full tree). The
+next GitHub push (via `push-github.sh`) re-filters automatically.
+
 ---
 
 ## 3. GENERALIZE — what belongs here and in what form
@@ -146,6 +169,8 @@ Toolbox hygiene (AGENTS.md):
 - Prefer: <PLACEHOLDER> tokens, loopback only, public GitHub URLs.
 - Generalize: 2+ consumer capabilities only; no project jargon in prose;
   project-specific content stays in the project repo.
+- Gitea-only: scripts/gitea-only.txt — never push those paths to GitHub;
+  direct github pushes are hook-blocked, use scripts/push-github.sh.
 - Gate: run scripts/sanitize-check.sh; push Gitea first; GitHub only when clean.
 - Unsure? Don't push GitHub. Ask the human.
 ```

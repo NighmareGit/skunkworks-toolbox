@@ -14,37 +14,37 @@ Systematic bug-fixing pipeline against the project bug ledger (`.scratch/BUGS.md
 flowchart TD
     START(["/bug-hunt"]) --> TRIAGE
 
-    TRIAGE["0. TRIAGE | ds-v4-flash 40k<br/>📖 read + validate BUGS.md<br/>🛡️ reject malformed entries<br/>📌 pick highest 🔴/🟠"]
+    TRIAGE["0. TRIAGE | judgment 40k<br/>📖 read + validate BUGS.md<br/>🛡️ reject malformed entries<br/>📌 pick highest 🔴/🟠"]
 
     TRIAGE --> DIAGNOSE
 
-    DIAGNOSE["1. DIAGNOSE | or-glm-5-2 250k<br/>🔬 diagnosing-bugs<br/>🧠 fireplace + metacog-friction<br/>🔧 fprintf instrument<br/>🔨 build → ▶️ test"]
+    DIAGNOSE["1. DIAGNOSE | high-ctx reasoning 250k<br/>🔬 diagnosing-bugs<br/>🧠 fireplace + metacog-friction<br/>🔧 fprintf instrument<br/>🔨 build → ▶️ test"]
     DIAGNOSE --> |"hypotheses falsified"| DIAGNOSE
     DIAGNOSE --> |"root cause confirmed"| BISECT_CHECK{known regression<br/>window?}
 
     BISECT_CHECK --> |yes| BISECT
     BISECT_CHECK --> |no, skip| WAYFINDER
 
-    BISECT["2. BISECT | longcat-2 200k<br/>🔍 bisect-regression<br/>🏗️ git bisect run"] --> WAYFINDER
+    BISECT["2. BISECT | worker 200k<br/>🔍 bisect-regression<br/>🏗️ git bisect run"] --> WAYFINDER
 
-    WAYFINDER["3. WAYFINDER | ds-v4-pro 200k<br/>🧭 evaluate complexity<br/>🆕 grep call sites first<br/>🆕 >5 refs → force complex"]
+    WAYFINDER["3. WAYFINDER | frontier reasoning 200k<br/>🧭 evaluate complexity<br/>🆕 grep call sites first<br/>🆕 >5 refs → force complex"]
     WAYFINDER --> |"complex: spawn research"| RESEARCH
     WAYFINDER --> |"simple fix"| PROTOTYPE
 
-    RESEARCH["3a. RESEARCH | ds-v4-flash 350k<br/>📖 parallel read-only study"] --> PROTOTYPE
+    RESEARCH["3a. RESEARCH | judgment 350k<br/>📖 parallel read-only study"] --> PROTOTYPE
 
-    PROTOTYPE["4. PROTOTYPE | ds-v4-flash 500k<br/>✏️ implement fix ≤10 lines<br/>🆕 lease re-validate before each GPU op<br/>🔨 build → ▶️ 3-prompt test"]
+    PROTOTYPE["4. PROTOTYPE | judgment 500k<br/>✏️ implement fix ≤10 lines<br/>🆕 lease re-validate before each GPU op<br/>🔨 build → ▶️ 3-prompt test"]
     PROTOTYPE --> FALSIFY
 
-    FALSIFY["🆕 4b. FALSIFY | ds-v4-pro 150k<br/>⚔️ flip suspected cause<br/>reverse direction<br/>symptom MUST flip"]
+    FALSIFY["🆕 4b. FALSIFY | frontier reasoning 150k<br/>⚔️ flip suspected cause<br/>reverse direction<br/>symptom MUST flip"]
     FALSIFY --> |"flips ✓"| VERIFY
     FALSIFY --> |"doesn't flip ✗<br/>diagnosis wrong"| DIAGNOSE
 
-    VERIFY["5. VERIFY | ds-v4-pro 300k<br/>📊 perf-verification<br/>🆕 hard 2-model minimum<br/>🆕 crash/OOM/timeout = FAIL<br/>🆕 regression suite: re-test all fixed"]
+    VERIFY["5. VERIFY | frontier reasoning 300k<br/>📊 perf-verification<br/>🆕 hard 2-model minimum<br/>🆕 crash/OOM/timeout = FAIL<br/>🆕 regression suite: re-test all fixed"]
     VERIFY --> |"FAIL"| DIAGNOSE
     VERIFY --> |"PASS"| REVIEW
 
-    REVIEW["6. REVIEW | ds-v4-pro 350k<br/>📋 code-review ⏸ red-team<br/>⚡ parallel"]
+    REVIEW["6. REVIEW | frontier reasoning 350k<br/>📋 code-review ⏸ red-team<br/>⚡ parallel"]
     REVIEW --> |"blocking issues"| PROTOTYPE
     REVIEW --> |"clean"| MARK
 
@@ -284,7 +284,7 @@ Breaker state persists in `.scratch/bug-hunt-state.json` so the orchestrator can
 
 | Rule | Detail |
 |------|--------|
-| **Branch per bug** | `fix/<bug-id>-<short-desc>` (e.g., `fix/BUG-001-gdn-cpu-fallback`) |
+| **Branch per bug** | `fix/<bug-id>-<short-desc>` (e.g., `fix/BUG-001-garbled-output`) |
 | **Worktree per bug** | `git worktree add ../worktrees/bug-<id>/ fix/<bug-id>` |
 | **Throw-away prototype** | Prototype stage works in worktree. If Verify fails, `git worktree remove` — no cleanup needed |
 | **Commit on Mark** | Only commit when pipeline reaches Stage 7. Conventional commit: `fix(<scope>): <bug-id> — <description>` |
@@ -293,27 +293,29 @@ Breaker state persists in `.scratch/bug-hunt-state.json` so the orchestrator can
 
 ## Model Selection
 
-Each stage has different compute and reasoning demands. The orchestrator picks the model per sub-agent dispatch:
+Each stage has different compute and reasoning demands. The orchestrator picks the model
+per sub-agent dispatch — the concrete model is the orchestrator's choice: pick the cheapest
+available model whose context fits the stage's cap.
 
-| Stage | Recommended Model | Context Cap | Why |
+| Stage | Recommended Seat | Context Cap | Why |
 |-------|------------------|-------------|-----|
-| Triage | `ds-v4-flash` | **40k** | Just reads and validates BUGS.md — minimal context needed |
-| Diagnose | `or-glm-5-2` | **250k** | Heavy source file reading, instrumentation, hypothesis tracking |
-| Bisect | `longcat-2` | **200k** | Git bisect across many commits, build logs, diff analysis |
-| Wayfinder | `ds-v4-pro` | **200k** | Grep call sites, evaluate research reports, fix complexity |
-| Research | `ds-v4-flash` | **350k** | Parallel code study across multiple files and call sites |
-| Prototype | `ds-v4-flash` | **500k** | Build issues, large code context, test output for ≥3 prompts × 2 models |
-| **🆕 Falsify** | `ds-v4-pro` | **150k** | Critical reasoning — flip cause, observe symptom, decide diagnosis validity |
-| Verify | `ds-v4-pro` | **300k** | Benchmark output, coherence checks, regression suite, baseline comparison |
-| Review | `ds-v4-pro` | **350k** | Diffs, affected code paths, two parallel review reports |
+| Triage | a cheap judgment model | **40k** | Just reads and validates BUGS.md — minimal context needed |
+| Diagnose | a high-context reasoning model | **250k** | Heavy source file reading, instrumentation, hypothesis tracking |
+| Bisect | a long-context worker model | **200k** | Git bisect across many commits, build logs, diff analysis |
+| Wayfinder | a frontier reasoning model | **200k** | Grep call sites, evaluate research reports, fix complexity |
+| Research | a judgment model | **350k** | Parallel code study across multiple files and call sites |
+| Prototype | a judgment model | **500k** | Build issues, large code context, test output for ≥3 prompts × 2 models |
+| **🆕 Falsify** | a frontier reasoning model | **150k** | Critical reasoning — flip cause, observe symptom, decide diagnosis validity |
+| Verify | a frontier reasoning model | **300k** | Benchmark output, coherence checks, regression suite, baseline comparison |
+| Review | a frontier reasoning model | **350k** | Diffs, affected code paths, two parallel review reports |
 
 **Override with `--model <name>`** to force a specific model for all stages, `--context <k>` for global cap, or `--model-stage <stage>:<model>` for per-stage override:
 
 ```
-/bug-hunt --model or-glm-5-2                          # all stages use GLM 5.2
+/bug-hunt --model <model-name>                          # all stages use this model
 /bug-hunt --context 128k                                # global 128k cap for all stages
-/bug-hunt --model-stage diagnose:grok-4.5               # diagnose uses Grok, rest default
-/bug-hunt --model-stage prototype:or-qwen3-coder-free   # cheaper prototype model
+/bug-hunt --model-stage diagnose:<model-name>           # diagnose uses a different model
+/bug-hunt --model-stage prototype:<model-name>          # cheaper prototype model
 /bug-hunt --context-stage prototype:500k                # prototype gets 500k, rest default
 ```
 
@@ -340,7 +342,7 @@ Every bug entry must have these fields for the pipeline to accept it. Missing fi
 | `**Reproduction**` | shell command | See canonical format below | Must be a single shell command that returns non-zero on the bug |
 | `**Symptom**` | text | `Output is Chinese gibberish for English prompts` | What the user sees when the bug triggers |
 | `**Status**` | enum | `🔴 **Open** — needs bisect` | Must start with: `Open`, `Blocked`, or `Fixed`. Only `Open` bugs are selected. |
-| `**Hardware**` | text | `Single GPU (7900 XTX 24 GB)` | What hardware is needed to reproduce. Used by Stage 0 to skip bugs whose HW isn't available. |
+| `**Hardware**` | text | `Single GPU (24 GB VRAM)` | What hardware is needed to reproduce. Used by Stage 0 to skip bugs whose HW isn't available. |
 
 ### Reproduction Command Canonical Format
 
@@ -348,8 +350,8 @@ Must use `llama-server` + `curl`, not `llama-cli` (spinner/loop bug) and not `ll
 
 ```bash
 # Start server on random port, wait, curl completion, kill server
-./build-rocm-native/bin/llama-server \
-  --model <model.gguf> \
+./<build-dir>/bin/llama-server \
+  --model <MODEL_PATH> \
   -ngl <N> \
   --port 18901 \
   --no-webui --no-warmup -c 64 \
@@ -385,14 +387,14 @@ exit $RESULT
 |-------|-------|
 | **Severity** | 🔴 Critical — model unusable without workaround |
 | **Discovered** | 2026-07-26 |
-| **Affected models** | Qwen3.5 9B, Qwen3.6 35B (optional, informative) |
-| **Trigger** | `-ngl 0` on GDN models (optional, informative) |
-| **Reproduction** | `./build-rocm-native/bin/llama-server --model Qwen3.5-9B-MTP-Q4_K_M.gguf -ngl 0 --port 18901 --no-webui --no-warmup -c 64 2>&1 & sleep 3; curl -s http://127.0.0.1:18901/v1/completions -H "Content-Type: application/json" -d '{"prompt":"2+2=","max_tokens":6,"temperature":0}' \| grep -q "5，"; RES=$?; kill %1; exit $RES` |
-| **Hardware** | Single GPU (7900 XTX 24 GB) or CPU-only |
-| **Symptom** | Output is Chinese gibberish for English prompts: `"5，这个等式成立"` instead of `"4"` |
-| **Root cause** | GDN non-fused op in ggml-cpu/ops.cpp uses wrong tensor dimension |
-| **Workaround** | Use `-ngl 99` (full GPU offload) — only works if model fits in VRAM |
-| **Status** | 🔴 **Open** — needs bisect of CPU GDN ops |
+| **Affected models** | `<model-family>` 9B, `<model-family>` 35B (optional, informative) |
+| **Trigger** | `-ngl 0` on `<model-arch>` models (optional, informative) |
+| **Reproduction** | `./<build-dir>/bin/llama-server --model <MODEL_PATH> -ngl 0 --port 18901 --no-webui --no-warmup -c 64 2>&1 & sleep 3; curl -s http://127.0.0.1:18901/v1/completions -H "Content-Type: application/json" -d '{"prompt":"<test prompt>","max_tokens":<N>,"temperature":0}' \| grep -q "<bug symptom pattern>"; RES=$?; kill %1; exit $RES` |
+| **Hardware** | Single GPU (24 GB VRAM) or CPU-only |
+| **Symptom** | Output is incoherent for simple prompts: `<wrong output example>` instead of `<expected output>` |
+| **Root cause** | `<non-fused compute path uses the wrong tensor dimension>` |
+| **Workaround** | Use `-ngl <max>` (full device offload) — only works if the model fits in VRAM |
+| **Status** | 🔴 **Open** — needs bisect |
 ```
 
 ### Validation Checks (Stage 0)

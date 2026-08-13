@@ -102,9 +102,7 @@ you are unsure it generalizes.
 
 ## Status
 
-- Skills: 51 (incl. campaign-orchestrator, research-pipeline pair, alpha-wayfinder quartet, the
-  assembly-chain + wayfinder family, orchestration-dispatch, academic-research, ticket-generator,
-  design-build-pipeline, build-verify, skill-architect tooling)
+- Skills: 51 (50 in this mirror — `multi-gpu-verify` is LAN-only per the hygiene contract; see AGENTS.md §2.4)
 - Workflows: 1 (academic-research — the first Rhai workflow, dual-mode focus; + academic-research-win variant)
 - Procedures: 3 (git-bisect-regression-fix, project-initialization, SESSION-SUNDOWN)
 

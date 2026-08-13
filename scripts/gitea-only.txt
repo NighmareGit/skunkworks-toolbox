@@ -1,0 +1,8 @@
+# Gitea-only paths — tracked in the LAN mirror, NEVER pushed to the public GitHub mirror.
+# One path per line (directories end with /). Enforcement:
+#   - scripts/pre-push.sh (installed as .git/hooks/pre-push) refuses any push to the
+#     github remote while these paths are in the pushed tree.
+#   - scripts/push-github.sh is the ONLY sanctioned way to push github: it builds a
+#     filtered tree without these paths, runs the sanitize scan, then pushes.
+# Rationale for each entry lives in AGENTS.md §"Gitea-only files".
+skills/multi-gpu-verify/
