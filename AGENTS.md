@@ -24,6 +24,12 @@
 If a change fails the scan, fix it (or consciously redact) before pushing GitHub.
 Never push GitHub with a failing scan.
 
+**Inbound contributions (GitHub):** strangers may fork and open a pull request.
+They never get push access. Maintainers review every PR against this contract
+and the reusability gate. CI runs `scripts/sanitize-check.sh` on PRs. A green
+scan is necessary, not sufficient — read the prose. Details:
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
 ---
 
 ## 2. SANITIZE — what must never appear in this repo

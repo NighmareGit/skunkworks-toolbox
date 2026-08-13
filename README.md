@@ -96,7 +96,9 @@ to answer **one question: "what am I trying to do?"** Then pick the right tool:
 Sync rule: commit locally → push the private LAN mirror → push the public GitHub
 mirror (sanitized: no internal hostnames/IPs, credentials, or personal paths).
 The GitHub copy is public by design — anyone who finds it useful is welcome to
-the skills.
+the skills. **Pull requests are welcome** after a maintainer review. See
+[CONTRIBUTING.md](CONTRIBUTING.md). Propose a new skill as an issue first if
+you are unsure it generalizes.
 
 ## Status
 
