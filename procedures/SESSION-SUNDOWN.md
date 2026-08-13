@@ -1,10 +1,13 @@
 # SESSION SUNDOWN — the end-of-session commit/push/backup protocol
 
-> **Reusable procedure.** First executed 2026-08-04 (the logout sweep). The campaign's memory
-> is only as durable as its last sundown: the LEDGER, the reports, the harnesses, and the
+> **Reusable procedure.** First executed 2026-08-04 (the logout sweep). A campaign's memory
+> is only as durable as its last sundown: the ledger, the reports, the harnesses, and the
 > `/tmp` artifacts must be in at least TWO durable places before the session ends.
 > **Rule of thumb:** if a report cites a file that lives in `/tmp`, archive it at sundown —
 > a reboot is a silent data loss.
+> **Placeholders:** replace `<WORKSPACE>`, `<ARCHIVE_MOUNT>`, `<GITEA_HOST>`, `<USER>`,
+> `<GITEA_TOKEN>` with your environment. The real values live in the originating project,
+> never here.
 
 ---
 
@@ -18,14 +21,13 @@ may drop the working context. ~10 minutes. Run the steps in order; each is idemp
 ## 1. Commit the workspace sweep
 
 ```bash
-cd /home/hunter/scratch/prototype-auto
+cd <WORKSPACE>
 git add -A
 # ⚠️ GITLINK GUARD (learned the hard way, 2026-08-04): `git add -A` records embedded git
 #    repos (the fork + worktrees) as gitlinks. Check and undo:
 git ls-files -s | grep -c '^160000'   # if > 0:
-git rm --cached -q atomic-llama-cpp-turboquant worktrees/ bug-002a-worktree gdn-graph-reuse-worktree t4-pipeline-optimization
-# (worktrees/ + the embedded repos are already in .gitignore — re-add only if missing)
-git commit -q -m "chore: sundown sweep — <session summary through LEDGER #N>"
+git rm --cached -q <fork> <worktrees>  # list the embedded repos here (already in .gitignore)
+git commit -q -m "chore: sundown sweep — <session summary through ledger entry #N>"
 ```
 
 Note: tracked `__pycache__/*.pyc` files ride along (they are tracked state; harmless).
@@ -36,21 +38,21 @@ Note: tracked `__pycache__/*.pyc` files ride along (they are tracked state; harm
 
 | Repo | Location | Push targets |
 |------|----------|--------------|
-| prototype-auto (workspace) | `/home/hunter/scratch/prototype-auto` | gitea `hunter/prototype-auto` |
-| fork | `atomic-llama-cpp-turboquant/` | github `NighmareGit` **and** gitea (good-prototype + any active branches: `proto/*`, `fix/*`) |
-| south-star-sibling | `/home/hunter/scratch/south-star-sibling` | gitea |
-| south-star-reflection | `/home/hunter/scratch/south-star-reflection` | gitea |
-| dispatcher-engine (+ -campaign) | `/home/hunter/scratch/dispatcher-engine*` | gitea |
-| skunkworks-toolbox | `/home/hunter/scratch/skunkworks-toolbox` | gitea |
-| grok-build | **gitea-only** (no local clone) | branches: `main`, `harness-needs`, `remote-server-client` |
+| workspace (project repo) | `<WORKSPACE>` | gitea `<USER>/<repo>` |
+| fork | `<WORKSPACE>/<fork>/` | github (public) **and** gitea (any active branches) |
+| sibling | `<WORKSPACE>/<sibling>` | gitea |
+| reflection machine | `<WORKSPACE>/<reflection>` | gitea |
+| dispatcher engine (+ campaign) | `<WORKSPACE>/<dispatcher>*` | gitea |
+| skunkworks-toolbox | `<WORKSPACE>/<toolbox>` | gitea |
+| harness repo | **gitea-only** (no local clone) | branches: `<branch-a>`, `<branch-b>` |
 
 ```bash
 # per repo with a local clone:
 git -C <repo> status --short && git -C <repo> push        # commit anything pending first
 # fork branch sweep (unpushed vs gitea):
 git log --oneline gitea/<branch>..<branch> | wc -l        # push any non-zero
-# grok-build: verify via gitea API (no local clone):
-curl -s "http://192.168.8.108:3005/api/v1/repos/hunter/grok-build/branches" -H 'Authorization: token <helm-write>'
+# gitea-only repo: verify via gitea API (no local clone):
+curl -s "http://<GITEA_HOST>/api/v1/repos/<USER>/<harness-repo>/branches" -H 'Authorization: token <GITEA_TOKEN>'
 ```
 
 ---
@@ -62,7 +64,7 @@ curl -s "http://192.168.8.108:3005/api/v1/repos/hunter/grok-build/branches" -H '
 **Tier 1 — git archive (load-bearing subset, pushed):**
 
 ```bash
-cd /home/hunter/scratch/prototype-auto
+cd <WORKSPACE>
 mkdir -p .scratch/archives/tmp-$(date +%F)
 rsync -a --exclude '__pycache__' --exclude '*.pyc' --exclude 'venv' --exclude 'logs' \
   /tmp/<harness-or-corpus-dirs>/ .scratch/archives/tmp-$(date +%F)/<name>/
@@ -72,7 +74,7 @@ git add .scratch/archives/ && git commit -q -m "chore(archive): /tmp artifacts <
 **Tier 2 — HDD full dump (everything, incl. venvs + big files):**
 
 ```bash
-DEST=/mnt/toshiba_a/campaign-tmp-archive-$(date +%F)
+DEST=<ARCHIVE_MOUNT>/campaign-tmp-archive-$(date +%F)
 mkdir -p "$DEST"
 rsync -a /tmp/<all-campaign-dirs-and-files> "$DEST/"        # full fidelity, no exclusions
 ```
@@ -95,7 +97,7 @@ Keep both the unpacked dirs (browsing) and the archives (transfer).
 A spinning disk caches writes in RAM — `cp`/`rsync` "done" does NOT mean on-platter:
 
 ```bash
-sync && sync -f /mnt/toshiba_a/campaign-tmp-archive-$(date +%F)
+sync && sync -f <ARCHIVE_MOUNT>/campaign-tmp-archive-$(date +%F)
 ```
 
 ---
@@ -112,9 +114,9 @@ file — the map is the single source of "where is everything."
 
 ```bash
 # If /tmp was cleared, re-materialize what's needed FROM THE ARCHIVES (never from memory):
-ls /mnt/toshiba_a/campaign-tmp-archive-<date>/          # the full dump
-tar -xzf .../atomizer-pilot.tar.gz -C /tmp/              # e.g. the sealed corpus + harness
-# Verify the git archive is in sync: git log --oneline -1 (prototype-auto) shows the sundown commit.
+ls <ARCHIVE_MOUNT>/campaign-tmp-archive-<date>/          # the full dump
+tar -xzf .../<name>.tar.gz -C /tmp/                      # e.g. a sealed corpus + harness
+# Verify the git archive is in sync: git log --oneline -1 (<WORKSPACE>) shows the sundown commit.
 ```
 
 ---
@@ -126,6 +128,7 @@ tar -xzf .../atomizer-pilot.tar.gz -C /tmp/              # e.g. the sealed corpu
 2. **HDD writes are cached** — `sync` is mandatory after any HDD copy, or a power loss eats the backup.
 3. **Small files kill HDD IOPS** — the VA venv (98M, thousands of files) took minutes; its
    archive (30M) takes seconds. Archive before any transfer.
-4. **Reports cite `/tmp` paths** (e.g. `/tmp/redteam-atomizer-design-v2.md` in the atomizer
-   design) — those citations are only safe if the file is archived at sundown.
-5. **Grok-build has no local clone** — its state is gitea-only; verify branches via the API, not `git status`.
+4. **Reports cite `/tmp` paths** (e.g. `/tmp/<report>.md` in a design doc) — those citations
+   are only safe if the file is archived at sundown.
+5. **A gitea-only repo has no local clone** — its state is gitea-only; verify branches via
+   the API, not `git status`.
